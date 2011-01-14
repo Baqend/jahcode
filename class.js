@@ -4,17 +4,16 @@ var public;
 
 Function.empty = function() {};
 
-Function.prototype.extend = function(packageOrExtender, extender) {
-	if (typeof packageOrExtender == 'string') {
-		var pack = Package.forName(packageOrExtender);
-	} else {
-//		var pack = Package.getCurrentPackage();
-		var pack = window;
-		extender = packageOrExtender;
+Function.prototype.extend = function(className, classDescriptor) {
+	if (className instanceof Function) {
+		classDescriptor = className;
+		className = null;
 	}
 	
-	var cls = new Class()
-	cls.init(this, pack, extender);
+	var cls = new Class(this, className, classDescriptor);
+	
+	if (className != null)
+		window[className] = cls.getClassObject();
 	
 	return cls.getClassObject();
 }
@@ -28,65 +27,68 @@ function Delegator(scope, name) {
 	}
 }
 
-function Class() {
-	var self = this,
-		_classObject,
-		_parentClassObject,
-		_classDescriptor;
+var Class = function C(self) {
+	private.parentClassObject;
+	private.classObject;
+	private.classDescriptor;
+	private.name;
+	private.simpleName;
 	
-	this.init = function(parentClassObject, classPackage, classDescriptor) {
-		_parentClassObject = parentClassObject? parentClassObject: Object;
+	public.init = function(parentClassObject, name, classDescriptor) {
+		self.parentClassObject = parentClassObject? parentClassObject: Object;
+		self.classDescriptor = classDescriptor;
+		self.name = name;
+		self.simpleName = name == null? null: name.substring(name.lastIndexOf('.'));
 		
-		_classObject.prototype = Object.create(_parentClassObject.prototype);
+		self.classObject.prototype = Object.create(self.parentClassObject.prototype);
 		
-		Object.defineProperty(_classObject, 'class', {value : self});
-		
-		_classDescriptor = classDescriptor;
+		Object.defineProperty(self.classObject, 'class', {value : self});
 	}
 	
-	this.getClassObject = function() {
-		return _classObject;
+	public.getClassObject = function() {
+		return self.classObject;
 	}
 	
-	this.getParentClassObject = function() {
-		return _parentClassObject;
+	public.getParentClassObject = function() {
+		return self.parentClassObject;
 	}
 		
-	this.getParentClass = function() {
-		return _parentClassObject.class;
+	public.getParentClass = function() {
+		return self.parentClassObject.class;
 	}
 	
-	this.getClassDescriptor = function() {
-		return _classDescriptor;
+	public.getClassDescriptor = function() {
+		return self.classDescriptor;
 	}
 	
-	this.getSimpleName = function() {
-		return _simpleName;
+	public.getSimpleName = function() {
+		return self.simpleName;
 	}
 	
-	this.getPackage = function() {
-		return _package;
+	public.getName = function() {
+		return self.name;
 	}
 	
-	_classObject = function(scope) {
-		
+	private.classObject = function() {
 		if (this.constructor == Object) {
-			this.constructor = _classObject;
+			this.constructor = self.classObject;
 			
 			public = this;
 			protected = Object.create(public);
 			
-			scope = Object.create(protected);
+			var scope = Object.create(protected);
+		} else {
+			var scope = private;
 		}
 
 		var super = function() {};
 			
-		if (_parentClassObject.class instanceof Class) {
-			var parentScope = Object.create(protected);
+		if (self.parentClassObject.class instanceof Class) {
+			private = Object.create(protected);
 			
-			_parentClassObject.call(this, parentScope);
+			self.parentClassObject.call(this);
 			
-			super = parentScope.init.bind(parentScope);
+			super = private.init.bind(private);
 			
 //			delete this.init;
 			
@@ -98,7 +100,7 @@ function Class() {
 		}
 		
 		private = scope;
-		_classDescriptor.call(public, private, super);
+		self.classDescriptor.call(public, private, super);
 		
 		for (var name in protected) {
 			if (!(protected[name] instanceof Function) && !scope.hasOwnProperty(name)) {
@@ -114,18 +116,39 @@ function Class() {
 			}
 		}
 		
-		if (this.constructor == _classObject) {
+		if (this.constructor == self.classObject) {
 			for (var name in public) {
 				if (!(public[name] instanceof Function)) {
 					Object.defineProperty(protected, name, new Delegator(public, name));
 				}
 			}
-			
 			scope.init.apply(scope, arguments);
 //			delete this.init;
 		}
 	}
 }
+
+
+//var classPrototype = {};
+//
+//public = Object.create(classPrototype);
+//private = Object.create(public);
+//Class.call(public, private);
+//public.init(null, 'Class', Class);
+//
+//var Class = public.getClassObject();
+//Class.prototype = classPrototype;
+//
+//public = private = undefined;
+
+
+public = protected = private = {};
+Class.call(public, public);
+public.init(null, 'Class', Class);
+var cls = public.classObject;
+Class = new cls(null, 'Class', Class).getClassObject();
+Class.class.constructor = Class;
+Class.prototype = cls.prototype;
 
 
 //Class.Init = function(self) {
@@ -190,7 +213,7 @@ function Class() {
 //
 //var package = Package.setCurrentPackage;
 
-var Test = Object.extend(function(self) {
+Object.extend('Test', function(self) {
 	
 	private.privateVar = 'private';
 	protected.protectedVar = 'protected';
@@ -224,7 +247,7 @@ var Test = Object.extend(function(self) {
 	}
 });
 
-var TestExtended = Test.extend(function(self, super) {
+Test.extend('TestExtended', function(self, super) {
 	
 	private.privateVar = 'private2';
 	protected.protectedVar = 'protected2';
@@ -288,3 +311,11 @@ console.log(t instanceof Test);
 console.log(t instanceof TestExtended);
 console.log(test instanceof Test);
 console.log(test instanceof TestExtended);
+
+console.log(Test.class instanceof Class);
+console.log(TestExtended.class instanceof Class);
+console.log(Class.class instanceof Class);
+
+console.log(TestExtended.class.constructor == Class);
+console.log(Test.class.constructor == Class);
+console.log(Class.class.constructor == Class);
