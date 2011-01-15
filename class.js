@@ -27,7 +27,7 @@ function Delegator(scope, name) {
 	}
 }
 
-var Class = function C(self) {
+var Class = function(self) {
 	private.parentClassObject;
 	private.classObject;
 	private.classDescriptor;
@@ -71,26 +71,27 @@ var Class = function C(self) {
 	
 	private.classObject = function() {
 		if (this.constructor == Object) {
+			var oldPublic = public;
+			var oldProtected = protected;
+			var oldPrivate = private;
+			
 			this.constructor = self.classObject;
 			
 			public = this;
 			protected = Object.create(public);
-			
-			var scope = Object.create(protected);
-		} else {
-			var scope = private;
 		}
 
 		var super = function() {};
 			
 		if (self.parentClassObject.class instanceof Class) {
-			private = Object.create(protected);
-			
 			self.parentClassObject.call(this);
 			
-			super = private.init.bind(private);
+			super = protected.init;
+			if (!super)
+				throw new Error('Cannot extend from class ' + self.getParentClass().getName());
 			
-//			delete this.init;
+			delete protected.init;
+			delete public.init;
 			
 			for (var name in protected) {
 				if (protected[name] instanceof Function) {
@@ -99,21 +100,24 @@ var Class = function C(self) {
 			}
 		}
 		
-		private = scope;
+		private = Object.create(protected);
 		self.classDescriptor.call(public, private, super);
 		
 		for (var name in protected) {
-			if (!(protected[name] instanceof Function) && !scope.hasOwnProperty(name)) {
-				Object.defineProperty(scope, name, new Delegator(protected, name));
+			if (!(protected[name] instanceof Function) && !private.hasOwnProperty(name)) {
+				Object.defineProperty(private, name, new Delegator(protected, name));
 			}
 		}
 		
-		if (!scope.init || !/\Wsuper\s*\(/.test(scope.init.toString())) {
-			var init = scope.init? scope.init: Function.empty;
-			scope.init = function() {
+		var initScope = public.init? public: protected;
+		if (initScope.init && !/\Wsuper\s*\(/.test(initScope.init.toString())) {
+			var init = initScope.init;
+			initScope.init = function() {
 				super();
-				init.apply(scope, arguments);
+				init.apply(this, arguments);
 			}
+		} else if (!private.init) {
+			public.init = super;
 		}
 		
 		if (this.constructor == self.classObject) {
@@ -122,26 +126,22 @@ var Class = function C(self) {
 					Object.defineProperty(protected, name, new Delegator(public, name));
 				}
 			}
-			scope.init.apply(scope, arguments);
-//			delete this.init;
+			
+			if (!public.init)
+				throw new Error('Can not instantiate classes with none public constructors');
+			
+			public.init.apply(public, arguments);
+			
+			delete public.init;
+			
+			public = oldPublic;
+			protected = oldProtected;
+			private = oldPrivate;
 		}
 	}
 }
 
-
-//var classPrototype = {};
-//
-//public = Object.create(classPrototype);
-//private = Object.create(public);
-//Class.call(public, private);
-//public.init(null, 'Class', Class);
-//
-//var Class = public.getClassObject();
-//Class.prototype = classPrototype;
-//
-//public = private = undefined;
-
-
+//init the Class class 
 public = protected = private = {};
 Class.call(public, public);
 public.init(null, 'Class', Class);
@@ -149,173 +149,4 @@ var cls = public.classObject;
 Class = new cls(null, 'Class', Class).getClassObject();
 Class.class.constructor = Class;
 Class.prototype = cls.prototype;
-
-
-//Class.Init = function(self) {
-//	self.call(this, this);
-//	this.init(Object, window, self);
-//	
-//	delete this.init;
-//	
-//	this.constructor = Class;
-//	
-//	Class.prototype = self.Init.prototype;
-//	Class.Prototype = self.Prototype;
-//}
-//
-//Class.Init.prototype = Object.create(Object.prototype);
-//new Class.Init(Class);
-
-//new Class(Object, window, function(Package) {
-//	var _currentPackage = window;
-//	
-//	Package.getCurrentPackage = function() {
-//		return _currentPackage;
-//	}
-//	
-//	Package.setCurrentPackage = function(currentPackage) {
-//		if (!currentPackage)
-//			currentPackage = '';
-//		
-//		if (typeof currentPackage == 'string')
-//			_currentPackage = Package.forName(currentPackage);
-//		else	
-//			_currentPackage = currentPackage;
-//	}
-//	
-//	Package.forName = function(name) {
-//		var comps = name.split('.');
-//		
-//		var cur = window;
-//		for (var i = 0, comp; comp = comps[i]; ++i) {
-//			if (comp in cur) {
-//				cur = cur[comp];
-//			} else {
-//				cur = cur[comp] = new Package(comps.slice(0, i + 1).join('.'));
-//			}
-//		}
-//		
-//		return cur;
-//	}
-//	
-//	return function Package() {
-//		var _name;
-//		
-//		this.init = function(name) {
-//			_name = name;
-//		}
-//		
-//		this.toString = function() {
-//			return _name;
-//		}
-//	}
-//});
-//
-//var package = Package.setCurrentPackage;
-
-Object.extend('Test', function(self) {
-	
-	private.privateVar = 'private';
-	protected.protectedVar = 'protected';
-	public.publicVar = 'public';
-	
-	protected.init = function() {
-		self.privateMethod();
-		self.protectedMethod();
-		self.publicMethod();
-	}
-	
-	private.privateMethod = function(arg) {
-		console.log('privateMethod');
-		console.log(self.privateVar);
-		console.log(self.protectedVar);
-		console.log(self.publicVar);
-	}
-	
-	protected.protectedMethod = function(arg) {
-		console.log('protectedMethod');
-		self.privateMethod();
-	}
-	
-	public.publicMethod = function(arg) {
-		console.log('publicMethod');
-		self.privateMethod();
-	}
-
-	public.getMethod = function() {
-		console.log(self.publicVar);
-	}
-});
-
-Test.extend('TestExtended', function(self, super) {
-	
-	private.privateVar = 'private2';
-	protected.protectedVar = 'protected2';
-	public.publicVar = 'public2';
-	
-	protected.init = function() {
-		self.privateMethod();
-		self.protectedMethod();
-		self.publicMethod();
-	}
-	
-	private.privateMethod = function(arg) {
-		console.log('privateMethod2');
-		console.log(self.privateVar);
-		console.log(self.protectedVar);
-		console.log(self.publicVar);
-	}
-	
-	protected.protectedMethod = function(arg) {
-		super.protectedMethod();
-		
-		console.log('protectedMethod2');
-		console.log(self.privateVar);
-		console.log(self.protectedVar);
-		console.log(self.publicVar);
-	}
-	
-	public.publicMethod = function(arg) {
-		super.publicMethod();
-		
-		console.log('publicMethod2');
-		console.log(self.privateVar);
-		console.log(self.protectedVar);
-		console.log(self.publicVar);
-	}
-	
-	public.setMethod = function() {
-		self.publicVar = 'muh';
-	}
-});
-
-//console = {
-//	log: function(msg) {
-//		document.write(msg + '<br/>');
-//	}
-//};
-
-var t = new Test();
-var test = new TestExtended();
-
-for (el in t)
-	console.log(el);
-
-for (el in test)
-	console.log(el);
-
-test.setMethod();
-test.getMethod();
-
-console.log(t instanceof Test);
-console.log(t instanceof TestExtended);
-console.log(test instanceof Test);
-console.log(test instanceof TestExtended);
-
-console.log(Test.class instanceof Class);
-console.log(TestExtended.class instanceof Class);
-console.log(Class.class instanceof Class);
-
-console.log(TestExtended.class.constructor == Class);
-console.log(Test.class.constructor == Class);
-console.log(Class.class.constructor == Class);
+public = protected = private = undefined;
