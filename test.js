@@ -59,10 +59,6 @@ Object.extend('Test', function(self) {
 			assertEquals('public', self.publicVar);
 		}
 	}
-
-	public.getMethod = function() {
-		console.log(self.publicVar);
-	}
 });
 
 Test.extend('TestExtended', function(self, super) {
@@ -97,10 +93,6 @@ Test.extend('TestExtended', function(self, super) {
 		assertEquals('private2', self.privateVar);
 		assertEquals('protected2', self.protectedVar);
 		assertEquals('public2', self.publicVar);
-	}
-	
-	public.setMethod = function() {
-		self.publicVar = 'muh';
 	}
 });
 
@@ -143,6 +135,91 @@ TestCase("TestClass", {
     	assertSame(t.constructor, TestExtended);
     	assertTrue(t instanceof TestExtended);
 	},
+	testMemberAccess : function() {
+		var myClass = Object.extend(function(self) {
+			private.privateVar = 1;
+			protected.protectedVar = 2;
+			public.publicVar = 3;
+			
+			public.getPrivateVar = function() {
+				return self.privateVar;
+			}
+			public.setPrivateVar = function(value) {
+				self.privateVar = value;
+			}
+			public.getProtectedVar = function() {
+				return self.protectedVar;
+			}
+			public.setProtectedVar = function(value) {
+				self.protectedVar = value;
+			}
+			public.getPublicVar = function() {
+				return self.publicVar;
+			}
+			public.setPublicVar = function(value) {
+				self.publicVar = value;
+			}
+		});
+		
+		var myExtClass = myClass.extend(function(self) {
+			private.privateVar = 4;
+
+			public.getExtPrivateVar = function() {
+				return self.privateVar;
+			}
+			public.setExtPrivateVar = function(value) {
+				self.privateVar = value;
+			}
+			public.getExtProtectedVar = function() {
+				return self.protectedVar;
+			}
+			public.setExtProtectedVar = function(value) {
+				self.protectedVar = value;
+			}
+			public.getExtPublicVar = function() {
+				return self.publicVar;
+			}
+			public.setExtPublicVar = function(value) {
+				self.publicVar = value;
+			}
+		});
+		
+		var obj = new myExtClass();
+		
+		assertSame(1, obj.getPrivateVar());
+		assertSame(4, obj.getExtPrivateVar());
+		assertSame(2, obj.getProtectedVar());
+		assertSame(2, obj.getExtProtectedVar());
+		assertSame(3, obj.getPublicVar());
+		assertSame(3, obj.getExtPublicVar());
+		assertSame(3, obj.publicVar);
+		
+		obj.setPrivateVar(5);
+		assertSame(5, obj.getPrivateVar());
+		assertSame(4, obj.getExtPrivateVar());
+		
+		obj.setExtPrivateVar(6);
+		assertSame(5, obj.getPrivateVar());
+		assertSame(6, obj.getExtPrivateVar());
+		
+		obj.setProtectedVar(7);
+		assertSame(7, obj.getProtectedVar());
+		assertSame(7, obj.getExtProtectedVar());
+		
+		obj.setExtProtectedVar(8);
+		assertSame(8, obj.getProtectedVar());
+		assertSame(8, obj.getExtProtectedVar());
+
+		obj.setPublicVar(9);
+		assertSame(9, obj.getPublicVar());
+		assertSame(9, obj.getExtPublicVar());
+		assertSame(9, obj.publicVar);
+		
+		obj.setExtPublicVar(10);
+		assertSame(10, obj.getPublicVar());
+		assertSame(10, obj.getExtPublicVar());
+		assertSame(10, obj.publicVar);
+	},
 	testConstructors : function() {
 		var myClass = Object.extend(function() {
 			public.init = function(a, b, c) {
@@ -159,6 +236,8 @@ TestCase("TestClass", {
 				super(a, b, c);
 			}
 		});
+		
+		new myExtClass(1, 2, 3);
 	},
 	testImplicitConstructors: function() {
 		expectAsserts(5); // + 3 in tear down
@@ -170,14 +249,14 @@ TestCase("TestClass", {
 		});
 		
 		var myExtClass = myClass.extend(function(self, super) {
-			// no super call
+			// no explicit super call
 		});
 		
 		new myExtClass();
 		
 		var myExtClass = myClass.extend(function(self, super) {
 			public.init = function() {
-				//no super call
+				//no explicit super call
 			}
 		});
 		
@@ -197,26 +276,3 @@ TestCase("TestClass", {
 		assertNotSame(undefined, instance.test);
 	}
 });
-
-//console = {
-//	log: function(msg) {
-//		document.write(msg + '<br/>');
-//	}
-//};
-
-var t = new Test();
-var test = new TestExtended();
-
-for (el in t)
-	console.log(el);
-
-for (el in test)
-	console.log(el);
-
-test.setMethod();
-test.getMethod();
-
-console.log(t instanceof Test);
-console.log(t instanceof TestExtended);
-console.log(test instanceof Test);
-console.log(test instanceof TestExtended);
