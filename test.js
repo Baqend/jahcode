@@ -335,5 +335,24 @@ TestCase("TestClass", {
 		var b = new myClass();
 		
 		b.add(a);
+	},
+	testChangeVisibility : function() {
+		var myClass = Object.extend(function() {
+		    private.name = 'test';
+		    
+		    protected.getName = function() {
+		        return this.name;
+		    }
+		});
+
+		var myExtClass = myClass.extend(function(super) {
+		    public.getName = function() {
+		        return super.getName();
+		    }
+		});
+		
+		var o = new myExtClass();
+		
+		assertSame('test', o.getName());
 	}
 });

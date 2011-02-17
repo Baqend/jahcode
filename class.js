@@ -63,7 +63,8 @@ var public;
 		this.enumerable = false;
 		
 		this.get = function get() {
-			return getScope(get.caller, name)[name];
+			var cls = get.caller && get.caller.class;
+			return (cls && scopes[cls.getName()] || scopes.public)[name];
 		}
 		
 		this.set = function set(value) {
@@ -72,7 +73,7 @@ var public;
 		
 		function getScope(method, name) {
 			var cls = method && method.class;
-			var s = scopes, n = cls && cls.getName();
+			
 			if (cls) {
 				var scope = scopes[cls.getName()];
 				if (scope) {
@@ -108,6 +109,9 @@ var public;
 			_classConstructor.prototype = Object.create(_parentConstructor.prototype);
 			
 			Object.defineProperty(_classConstructor, 'class', {value : self});
+			
+			this.get.class = self;
+			this.set.class = self;
 		}
 		
 		public.getConstructor = function() {
@@ -132,6 +136,22 @@ var public;
 		
 		public.getName = function() {
 			return _name;
+		}
+		
+		public.newInstance = function() {
+			var obj = Object.create(_classConstructor.prototype);
+			
+			_classConstructor.apply(obj, arguments);
+			
+			return obj;
+		}
+		
+		public.get = function(object, name) {
+			return object[name];
+		}
+		
+		public.set = function(object, name, value) {
+			object[name] = value;
 		}
 		
 		_classConstructor = function() {
@@ -174,8 +194,6 @@ var public;
 			private = scope[_name] = Object.create(protected);
 			_classDescriptor.call(this, super);
 			
-			private.super = super;
-			
 			var initScope = public.init? public: protected;
 			if (initScope.init && !/\Wsuper\s*\(/.test(initScope.init.toString())) {
 				var init = initScope.init;
@@ -195,6 +213,10 @@ var public;
 					Object.defineProperty(this, name, new Delegator(scope, name));
 				}
 				
+				if (protected.hasOwnProperty(name) && public.hasOwnProperty(name)) {
+					delete protected[name];
+				}
+				
 				if (prop instanceof Function && !prop.class) {
 					prop.class = self;
 				}
@@ -208,7 +230,7 @@ var public;
 				
 				public.init.apply(this, arguments);
 				
-				this.scope = scope;
+//				this.scope = scope;
 				
 				public = oldPublic;
 				protected = oldProtected;

@@ -8,13 +8,20 @@
 Object.extend('MyClass', function() {
 	private.myVar = 'test';
 	protected.test = 'muh';
+	private.args = null;
 	
-	public.init = function() {
+	public.init = function(a, b, c) {
 		console.log(this.test);
+		
+		this.args = [a, b, c];
 	}
 	
 	public.testMethod = function() {
 		  return this.myVar;
+	}
+	
+	public.getArgs = function() {
+		return this.args;
 	}
 	
 	protected.protectedMethod = function() {
