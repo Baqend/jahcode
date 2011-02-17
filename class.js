@@ -3,6 +3,7 @@ var protected;
 var public;
 
 (function() {
+	var scope;
 	var Prototype = function() {};
 	
 	//Add support for ff 3 and some older webkit versions
@@ -30,6 +31,15 @@ var public;
 
 	Function.empty = function() {};
 	
+	if (!Function.prototype.bind) {
+		Function.prototype.bind = function(self) {
+			var func = this;
+			return function() {
+				return func.apply(self, arguments);
+			}
+		}
+	}
+	
 	Function.prototype.extend = function(className, classDescriptor) {
 		if (typeof className != 'string') {
 			classDescriptor = className;
@@ -48,100 +58,129 @@ var public;
 		}
 	}
 	
-	function Delegator(scope, name) {
-		this.get = function() {
-			return scope[name];
+	function Delegator(scopes, name) {
+		this.configurable = false;
+		this.enumerable = false;
+		
+		this.get = function get() {
+			return getScope(get.caller, name)[name];
 		}
-		this.set = function(value) {
-			scope[name] = value;
+		
+		this.set = function set(value) {
+			getScope(set.caller, name)[name] = value;
+		}
+		
+		function getScope(method, name) {
+			var cls = method && method.class;
+			var s = scopes, n = cls && cls.getName();
+			if (cls) {
+				var scope = scopes[cls.getName()];
+				if (scope) {
+					if (scope.hasOwnProperty(name)) {
+						return scope;
+					} else if (scopes.protected.hasOwnProperty(name)) {
+						return scopes.protected;
+					}
+				}
+			}
+			
+			return scopes.public;
 		}
 	}
 	
-	Class = function(self) {
-		private.parentConstructor;
-		private.classConstructor;
-		private.classDescriptor;
-		private.name;
-		private.simpleName;
+	var anonymousClassCounter = 0;  
+	
+	Class = function() {
+		var self = this;
 		
-		public.init = function(parentConstructor, name, classDescriptor) {
-			self.parentConstructor = parentConstructor? parentConstructor: Object;
-			self.classDescriptor = classDescriptor;
-			self.name = name;
-			self.simpleName = name == null? null: name.substring(name.lastIndexOf('.'));
+		var _name = null;
+		var _parentConstructor = null;
+		var _classConstructor = null;
+		var _classDescriptor = null;
+		var _simpleName = null;
+		
+		public.init = function(parentConstructor, className, classDescriptor) {
+			_parentConstructor = parentConstructor? parentConstructor: Object;
+			_classDescriptor = classDescriptor;
+			_name = className == null? '$' + (++anonymousClassCounter): className;
+			_simpleName = _name.substring(_name.lastIndexOf('.'));
 			
-			self.classConstructor.prototype = Object.create(self.parentConstructor.prototype);
+			_classConstructor.prototype = Object.create(_parentConstructor.prototype);
 			
-			Object.defineProperty(self.classConstructor, 'class', {value : self});
+			Object.defineProperty(_classConstructor, 'class', {value : self});
 		}
 		
 		public.getConstructor = function() {
-			return self.classConstructor;
+			return _classConstructor;
 		}
 		
 		public.getParentConstructor = function() {
-			return self.parentConstructor;
+			return _parentConstructor;
 		}
 			
 		public.getParentClass = function() {
-			return self.parentConstructor.class;
+			return _parentConstructor.class;
 		}
 		
 		public.getDescriptor = function() {
-			return self.classDescriptor;
+			return _classDescriptor;
 		}
 		
 		public.getSimpleName = function() {
-			return self.simpleName;
+			return _simpleName;
 		}
 		
 		public.getName = function() {
-			return self.name;
+			return _name;
 		}
 		
-		private.classConstructor = function() {
+		_classConstructor = function() {
 			if (this.constructor == Object) {
 				var oldPublic = public;
 				var oldProtected = protected;
+				var oldScope = scope;
 				
-				this.constructor = self.classConstructor;
+				this.constructor = _classConstructor;
 				
-				public = this;
-				protected = Object.create(public);
+				scope = {};
+				
+				public = scope.public = Object.create(_classConstructor.prototype);
+				protected = scope.protected = Object.create(public);
 			}
-	
+			
 			var super = function() {};
 				
-			if (self.parentConstructor.class instanceof Class) {
-				self.parentConstructor.call(this);
+			if (_parentConstructor.class instanceof Class) {
+				_parentConstructor.call(this);
 				
-				super = protected.init;
-				if (!super)
+				if (public.init) {
+					super = public.init.bind(this);
+					delete public.init;
+				} else if (protected.init) {
+					super = protected.init.bind(this);
+					delete protected.init;
+				} else {
 					throw new Error('Cannot extend from class ' + self.getParentClass().getName());
-				
-				delete protected.init;
-				delete public.init;
+				}
 				
 				for (var name in protected) {
 					if (protected[name] instanceof Function) {
-						super[name] = protected[name];
+						super[name] = protected[name].bind(this);
 					}
 				}
 			}
 			
 			var oldPrivate = private;
-			private = Object.create(protected);
-			self.classDescriptor.call(public, private, super);
+			private = scope[_name] = Object.create(protected);
+			_classDescriptor.call(this, super);
 			
-			for (var name in protected) {
-				if (!(protected[name] instanceof Function) && !private.hasOwnProperty(name)) {
-					Object.defineProperty(private, name, new Delegator(protected, name));
-				}
-			}
+			private.super = super;
 			
 			var initScope = public.init? public: protected;
 			if (initScope.init && !/\Wsuper\s*\(/.test(initScope.init.toString())) {
 				var init = initScope.init;
+				init.class = self;
+				
 				initScope.init = function() {
 					super();
 					init.apply(this, arguments);
@@ -150,34 +189,41 @@ var public;
 				public.init = super;
 			}
 			
-			if (this.constructor == self.classConstructor) {
-				for (var name in public) {
-					if (!(public[name] instanceof Function)) {
-						Object.defineProperty(protected, name, new Delegator(public, name));
-					}
+			for (var name in private) {
+				var prop = private[name];
+				if (name != 'init' && !(name in this)) {
+					Object.defineProperty(this, name, new Delegator(scope, name));
 				}
 				
-				if (!public.init)
-					throw new Error('Can not instantiate classes with none public constructors');
-				
-				public.init.apply(public, arguments);
-				
-				delete public.init;
-				
-				public = oldPublic;
-				protected = oldProtected;
+				if (prop instanceof Function && !prop.class) {
+					prop.class = self;
+				}
 			}
 			
 			private = oldPrivate;
+			
+			if (this.constructor == _classConstructor) {
+				if (!public.init)
+					throw new Error('Can not instantiate classes with none public constructors');
+				
+				public.init.apply(this, arguments);
+				
+				this.scope = scope;
+				
+				public = oldPublic;
+				protected = oldProtected;
+				scope = oldScope;
+			}
 		}
 	}
 	
 	//init the Class class 
-	public = protected = private = {};
-	Class.call(public, public);
+	public = {};
+	Class.call(public);
 	public.init(null, 'Class', Class);
-	var cls = public.classConstructor;
-	public = protected = private = undefined;
+	var cls = public.getConstructor();
+	
+	public = undefined;
 
 	Class = new cls(null, 'Class', Class).getConstructor();
 	Class.class.constructor = Class;

@@ -1,112 +1,109 @@
-Object.extend('Test', function(self) {
+Object.extend('Test', function() {
 	
 	private.privateVar = 'private';
 	protected.protectedVar = 'protected';
 	public.publicVar = 'public';
 	
 	public.init = function() {
-		assertEquals('private', self.privateVar);
+		assertEquals('private', this.privateVar);
 		
-		if (self instanceof TestExtended) {
-			assertEquals('protected2', self.protectedVar);
-			assertEquals('public2', self.publicVar);
+		if (this instanceof TestExtended) {
+			assertEquals('protected2', this.protectedVar);
+			assertEquals('public2', this.publicVar);
 		} else {
-			assertEquals('protected', self.protectedVar);
-			assertEquals('public', self.publicVar);
+			assertEquals('protected', this.protectedVar);
+			assertEquals('public', this.publicVar);
 		}
 		
-		self.privateMethod();
-		self.protectedMethod();
-		self.publicMethod();
+		this.privateMethod();
+		this.protectedMethod();
+		this.publicMethod();
 	}
 	
 	private.privateMethod = function(arg) {
-		assertEquals('private', self.privateVar);
+		assertEquals('private', this.privateVar);
 		
-		if (self instanceof TestExtended) {
-			assertEquals('protected2', self.protectedVar);
-			assertEquals('public2', self.publicVar);
+		if (this instanceof TestExtended) {
+			assertEquals('protected2', this.protectedVar);
+			assertEquals('public2', this.publicVar);
 		} else {
-			assertEquals('protected', self.protectedVar);
-			assertEquals('public', self.publicVar);
+			assertEquals('protected', this.protectedVar);
+			assertEquals('public', this.publicVar);
 		}
 	}
 	
 	protected.protectedMethod = function(arg) {
-		self.privateMethod();
+		this.privateMethod();
 
-		assertEquals('private', self.privateVar);
+		assertEquals('private', this.privateVar);
 		
-		if (self instanceof TestExtended) {
-			assertEquals('protected2', self.protectedVar);
-			assertEquals('public2', self.publicVar);
+		if (this instanceof TestExtended) {
+			assertEquals('protected2', this.protectedVar);
+			assertEquals('public2', this.publicVar);
 		} else {
-			assertEquals('protected', self.protectedVar);
-			assertEquals('public', self.publicVar);
+			assertEquals('protected', this.protectedVar);
+			assertEquals('public', this.publicVar);
 		}
 	}
 	
 	public.publicMethod = function(arg) {
-		self.privateMethod();
+		this.privateMethod();
 		
-		assertEquals('private', self.privateVar);
+		assertEquals('private', this.privateVar);
 		
-		if (self instanceof TestExtended) {
-			assertEquals('protected2', self.protectedVar);
-			assertEquals('public2', self.publicVar);
+		if (this instanceof TestExtended) {
+			assertEquals('protected2', this.protectedVar);
+			assertEquals('public2', this.publicVar);
 		} else {
-			assertEquals('protected', self.protectedVar);
-			assertEquals('public', self.publicVar);
+			assertEquals('protected', this.protectedVar);
+			assertEquals('public', this.publicVar);
 		}
 	}
 });
 
-Test.extend('TestExtended', function(self, super) {
+Test.extend('TestExtended', function(super) {
 	
 	private.privateVar = 'private2';
 	protected.protectedVar = 'protected2';
 	public.publicVar = 'public2';
 	
 	public.init = function() {
-		self.privateMethod();
-		self.protectedMethod();
-		self.publicMethod();
+		this.privateMethod();
+		this.protectedMethod();
+		this.publicMethod();
 	}
 	
 	private.privateMethod = function(arg) {
-		assertEquals('private2', self.privateVar);
-		assertEquals('protected2', self.protectedVar);
-		assertEquals('public2', self.publicVar);
+		assertEquals('private2', this.privateVar);
+		assertEquals('protected2', this.protectedVar);
+		assertEquals('public2', this.publicVar);
 	}
 	
 	protected.protectedMethod = function(arg) {
 		super.protectedMethod();
 		
-		assertEquals('private2', self.privateVar);
-		assertEquals('protected2', self.protectedVar);
-		assertEquals('public2', self.publicVar);
+		assertEquals('private2', this.privateVar);
+		assertEquals('protected2', this.protectedVar);
+		assertEquals('public2', this.publicVar);
 	}
 	
 	public.publicMethod = function(arg) {
 		super.publicMethod();
 		
-		assertEquals('private2', self.privateVar);
-		assertEquals('protected2', self.protectedVar);
-		assertEquals('public2', self.publicVar);
+		assertEquals('private2', this.privateVar);
+		assertEquals('protected2', this.protectedVar);
+		assertEquals('public2', this.publicVar);
 	}
 });
-
+var pub = public;
+var pro = protected;
+var pri = private;
 var testObject;
 TestCase("TestClass", {
-	setUp: function() {
-		assertSame(undefined, public);
-		assertSame(undefined, protected);
-		assertSame(undefined, private);
-	},
 	tearDown: function() {
-		assertSame(undefined, public);
-		assertSame(undefined, protected);
-		assertSame(undefined, private);
+		assertSame(pub, public);
+		assertSame(pro, protected);
+		assertSame(pri, private);
 	},
 	testAvailability : function() {
 		assertNotSame(undefined, Test);
@@ -135,52 +132,96 @@ TestCase("TestClass", {
     	assertSame(t.constructor, TestExtended);
     	assertTrue(t instanceof TestExtended);
 	},
+	testInstanceOf : function() {
+		var myClass = Object.extend(function() {
+			public.init = function() {
+				assertTrue(this instanceof myClass);
+				
+				this.privateTest();
+				this.protectedTest();
+				this.publicTest();
+			}
+			private.privateTest = function() {
+				assertTrue(this instanceof myClass);
+			}
+			protected.protectedTest = function() {
+				assertTrue(this instanceof myClass);
+			}
+			public.publicTest = function() {
+				assertTrue(this instanceof myClass);
+			}
+		});
+		
+		new myClass();
+		
+		var myExtClass = Object.extend(function(super) {
+			public.init = function() {
+				super();
+				
+				this.privateTest();
+				assertTrue(this instanceof myExtClass);
+			}
+			private.privateTest = function() {
+				assertTrue(this instanceof myExtClass);
+			}
+			protected.protectedTest = function() {
+				super.protectedTest();
+				assertTrue(this instanceof myExtClass);
+			}
+			public.publicTest = function() {
+				super.publicTest();
+				assertTrue(this instanceof myExtClass);
+			}
+		});
+		
+		new myExtClass();
+	},
 	testMemberAccess : function() {
-		var myClass = Object.extend(function(self) {
+		var myClass = Object.extend(function() {
 			private.privateVar = 1;
 			protected.protectedVar = 2;
 			public.publicVar = 3;
 			
 			public.getPrivateVar = function() {
-				return self.privateVar;
+				return this.privateVar;
 			}
 			public.setPrivateVar = function(value) {
-				self.privateVar = value;
+				this.privateVar = value;
 			}
 			public.getProtectedVar = function() {
-				return self.protectedVar;
+				return this.protectedVar;
 			}
 			public.setProtectedVar = function(value) {
-				self.protectedVar = value;
+				this.protectedVar = value;
 			}
 			public.getPublicVar = function() {
-				return self.publicVar;
+				return this.publicVar;
 			}
 			public.setPublicVar = function(value) {
-				self.publicVar = value;
+				this.publicVar = value;
 			}
 		});
 		
-		var myExtClass = myClass.extend(function(self) {
+		var myExtClass = myClass.extend(function() {
 			private.privateVar = 4;
 
 			public.getExtPrivateVar = function() {
-				return self.privateVar;
+				return this.privateVar;
 			}
 			public.setExtPrivateVar = function(value) {
-				self.privateVar = value;
+				this.privateVar = value;
 			}
 			public.getExtProtectedVar = function() {
-				return self.protectedVar;
+				return this.protectedVar;
 			}
 			public.setExtProtectedVar = function(value) {
-				self.protectedVar = value;
+				this.protectedVar = value;
 			}
 			public.getExtPublicVar = function() {
-				return self.publicVar;
+				return this.publicVar;
 			}
 			public.setExtPublicVar = function(value) {
-				self.publicVar = value;
+				this.publicVar = value;
 			}
 		});
 		
@@ -231,7 +272,7 @@ TestCase("TestClass", {
 		
 		new myClass(1, 2, 3);
 		
-		var myExtClass = myClass.extend(function(self, super) {
+		var myExtClass = myClass.extend(function(super) {
 			public.init = function(a, b, c) {
 				super(a, b, c);
 			}
@@ -240,7 +281,7 @@ TestCase("TestClass", {
 		new myExtClass(1, 2, 3);
 	},
 	testImplicitConstructors: function() {
-		expectAsserts(5); // + 3 in tear down
+		expectAsserts(2);
 		
 		var myClass = Object.extend(function() {
 			public.init = function() {
@@ -248,13 +289,13 @@ TestCase("TestClass", {
 			}
 		});
 		
-		var myExtClass = myClass.extend(function(self, super) {
+		var myExtClass = myClass.extend(function(super) {
 			// no explicit super call
 		});
 		
 		new myExtClass();
 		
-		var myExtClass = myClass.extend(function(self, super) {
+		var myExtClass = myClass.extend(function(super) {
 			public.init = function() {
 				//no explicit super call
 			}
@@ -274,5 +315,25 @@ TestCase("TestClass", {
 		
 		assertSame(undefined, instance.publicMethod);
 		assertNotSame(undefined, instance.test);
+	},
+	testSameClassAccess : function() {
+		var myClass = Object.extend(function() {
+			public.add = function(cls) {
+				assertSame(a, cls);
+				cls.doAdd(this);
+			}
+			protected.doAdd = function(cls) {
+				assertSame(b, cls);
+				cls.added(this);
+			}
+			private.added = function(cls) {
+				assertSame(a, cls);
+			}
+		});
+		
+		var a = new myClass();
+		var b = new myClass();
+		
+		b.add(a);
 	}
 });

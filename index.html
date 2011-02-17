@@ -6,15 +6,40 @@
 <script type="text/javascript" src="class.js"></script>
 <script type="text/javascript">
 Object.extend('MyClass', function() {
-	public.testMethod = function() {
-
+	private.myVar = 'test';
+	protected.test = 'muh';
+	
+	public.init = function() {
+		console.log(this.test);
 	}
+	
+	public.testMethod = function() {
+		  return this.myVar;
+	}
+	
+	protected.protectedMethod = function() {
+	      return this.myVar;
+	  }
 });
 
-MyClass.extend('MyExtClass', function() {
+MyClass.extend('MyExtClass', function(super) {
+	private.myVar = 'test2';
+	  
   public.testMethod = function() {
-
+	  return super.testMethod();
   }
+  
+  public.test2Method = function() {
+	  return this.myVar;
+  }
+  
+  protected.protectedMethod = function() {
+      return 'super ' + super.protectedMethod();
+  }
+  
+  public.pubMethod = function() {
+	  return this.protectedMethod();
+  } 
 });
 </script>
 <title>Insert title here</title>
