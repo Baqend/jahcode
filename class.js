@@ -1,253 +1,159 @@
-var private;
-var protected;
-var public;
-
 (function() {
-	var scope;
-	var Prototype = function() {};
-	
-	//Add support for ff 3 and some older webkit versions
-	if (!Object.create && Object.prototype.__defineGetter__) {
-		Object.create = function(proto) {
-			Prototype.prototype = proto;
-			
-			return new Prototype();
+	Function.prototype.extend = function(target, props) {
+		if (!props) {
+			props = target;
+			target = this;
 		}
 		
-		Object.defineProperty = function(obj, name, descr) {
-			if ('value' in descr) {
-				obj[name] = descr.value;
+		for (name in props) {
+			if (props.hasOwnProperty(name))
+				target[name] = props[name];
+		}
+	};
+
+	Function.Empty = function() {};
+
+	Object.extend(Function.prototype, {
+		linearizedTypes: [Object],
+		inherit: function() {
+			var klass = function(objectToCast) {
+				if (!(this instanceof klass))
+					return objectToCast.isInstanceOf(klass)? objectToCast: null;
+				
+				this.initialize.apply(this, arguments);
+			};
+			
+			var objectDescriptor = arguments[arguments.length - 1];
+			var proto = Object.createPrototypeChain(klass, this, Array.prototype.slice.call(arguments, 0, arguments.length - 1));
+			
+			for (var name in objectDescriptor) {
+				if (objectDescriptor.hasOwnProperty(name)) {
+					if (name in Object.properties) {
+						Object.properties[name](proto, objectDescriptor, name);
+					} else {						
+						var d = objectDescriptor[name];
+						
+						if (!d || !(d.hasOwnProperty('get') || d.hasOwnProperty('set'))) {				
+							proto[name] = d;
+							
+							if (d instanceof Function) {
+								d.methodName = name;
+							}
+						} else {
+							Object.definePropertie(proto, name, d);
+						}
+					}
+				}
+			}
+			
+			if (proto.initialize === undefined)
+				proto.initialize = Function.Empty;
+			
+			return klass;
+		}
+	});
+	
+	Object.extend({
+		properties: {},
+		methods: Object.create(Object.prototype),
+		
+		cloneOwnProperties: function(target, src) {
+			var names = Object.getOwnPropertyNames(src);
+			for (var i = 0; i < names.length; ++i) {
+				var name = names[i];
+				Object.defineProperty(target, name, Object.getOwnPropertyDescriptor(src, name));			
+			}
+		},
+	
+		createPrototypeChain: function(cls, parentClass, traits) {
+			var proto = parentClass === Object? Object.methods: parentClass.prototype;
+			var linearizedTypes = parentClass.linearizedTypes.slice();
+			
+			for (var i = 0, trait; trait = traits[i]; ++i) {
+				if (!(trait.prototype instanceof Trait)) 
+					throw new TypeError("Only traits can be mixed in");
+				
+				var linearizedTraitTypes = trait.linearizedTypes;
+				for (var j = 0, type; type = linearizedTraitTypes[j]; ++j) {
+					if (linearizedTypes.indexOf(type) == -1) {
+						linearizedTypes.push(type);
+						
+						proto = Object.create(proto);
+						proto.constructor = type;
+						Object.cloneOwnProperties(proto, type.prototype);
+					}					
+				}
+			}
+	
+			linearizedTypes.push(cls);
+			
+			proto = Object.create(proto);
+			proto.constructor = cls;
+			
+			cls.prototype = proto;
+			cls.linearizedTypes = linearizedTypes;
+			
+			return proto;
+		}
+	});
+	
+	Object.extend(Object.properties, {
+		initialize: function(proto, objectDescriptor) {
+			var init = objectDescriptor.initialize;
+			if (proto instanceof Trait || /this\.superCall\(/.test(init.toString())) {
+				proto.initialize = function() {
+					this.superCall.apply(this, arguments);
+					init.call(this);
+				};
 			} else {
-				if ('get' in descr) {
-					obj.__defineGetter__(name, descr.get);
-				}
-				
-				if ('set' in descr) {
-					obj.__defineSetter__(name, descr.set);
-				}
+				proto.initialize = init;
 			}
+		},
+		extend: function(proto, objectDescriptor) {
+			Object.extend(proto.constructor, objectDescriptor.extend);
 		}
-	}
-
-	Function.empty = function() {};
+	});
 	
-	if (!Function.prototype.bind) {
-		Function.prototype.bind = function(self) {
-			var func = this;
-			return function() {
-				return func.apply(self, arguments);
+	Object.extend(Object.methods, {
+		superCall: function() {
+			var caller = arguments.callee.caller;
+			
+			if (caller && caller.methodName) {
+				var methodName = caller.methodName;
+				
+				var proto = this;
+				while (!proto.hasOwnProperty(methodName) || proto[methodName] !== caller) {
+					proto = Object.getPrototypeOf(proto);
+				}
+				proto = Object.getPrototypeOf(proto);
+				
+				return proto[caller.methodName].apply(this, arguments);
+			} else {		
+				throw new ReferenceError("superCall can not be called outside of object inheritance");
+			}
+		},
+		isInstanceOf: function(klass) {
+			return this instanceof klass || this.constructor.linearizedTypes.lastIndexOf(klass) != -1;
+		},
+		asInstanceOf: function(klass) {
+			if (this.isInstanceOf(klass)) {
+				return this;
+			} else {
+				throw new TypeError();
 			}
 		}
-	}
-	
-	Function.prototype.extend = function(className, classDescriptor) {
-		if (typeof className != 'string') {
-			classDescriptor = className;
-			className = null;
-		}
-		
-		if (classDescriptor instanceof Function) {
-			var cls = new Class(this, className, classDescriptor);
-			
-			if (className != null)
-				window[className] = cls.getConstructor();
-			
-			return cls.getConstructor();
-		} else {
-			this.call(classDescriptor);
-		}
-	}
-	
-	function Delegator(scopes, name) {
-		this.configurable = false;
-		this.enumerable = false;
-		
-		this.get = function get() {
-			var cls = get.caller && get.caller.class;
-			return (cls && scopes[cls.getName()] || scopes.public)[name];
-		}
-		
-		this.set = function set(value) {
-			getScope(set.caller, name)[name] = value;
-		}
-		
-		function getScope(method, name) {
-			var cls = method && method.class;
-			
-			if (cls) {
-				var scope = scopes[cls.getName()];
-				if (scope) {
-					if (scope.hasOwnProperty(name)) {
-						return scope;
-					} else if (scopes.protected.hasOwnProperty(name)) {
-						return scopes.protected;
-					}
-				}
-			}
-			
-			return scopes.public;
-		}
-	}
-	
-	var anonymousClassCounter = 0;  
-	
-	Class = function() {
-		var self = this;
-		
-		var _name = null;
-		var _parentConstructor = null;
-		var _classConstructor = null;
-		var _classDescriptor = null;
-		var _simpleName = null;
-		
-		public.init = function(parentConstructor, className, classDescriptor) {
-			_parentConstructor = parentConstructor? parentConstructor: Object;
-			_classDescriptor = classDescriptor;
-			_name = className == null? '$' + (++anonymousClassCounter): className;
-			_simpleName = _name.substring(_name.lastIndexOf('.'));
-			
-			_classConstructor.prototype = Object.create(_parentConstructor.prototype);
-			
-			Object.defineProperty(_classConstructor, 'class', {value : self});
-			
-			this.get.class = self;
-			this.set.class = self;
-		}
-		
-		public.getConstructor = function() {
-			return _classConstructor;
-		}
-		
-		public.getParentConstructor = function() {
-			return _parentConstructor;
-		}
-			
-		public.getParentClass = function() {
-			return _parentConstructor.class;
-		}
-		
-		public.getDescriptor = function() {
-			return _classDescriptor;
-		}
-		
-		public.getSimpleName = function() {
-			return _simpleName;
-		}
-		
-		public.getName = function() {
-			return _name;
-		}
-		
-		public.newInstance = function() {
-			var obj = Object.create(_classConstructor.prototype);
-			
-			_classConstructor.apply(obj, arguments);
-			
-			return obj;
-		}
-		
-		public.get = function(object, name) {
-			return object[name];
-		}
-		
-		public.set = function(object, name, value) {
-			object[name] = value;
-		}
-		
-		_classConstructor = function() {
-			if (this.constructor == Object) {
-				var oldPublic = public;
-				var oldProtected = protected;
-				var oldScope = scope;
-				
-				this.constructor = _classConstructor;
-				
-				scope = {};
-				
-				public = scope.public = Object.create(_classConstructor.prototype);
-				protected = scope.protected = Object.create(public);
-			}
-			
-			var super = function() {};
-				
-			if (_parentConstructor.class instanceof Class) {
-				_parentConstructor.call(this);
-				
-				if (public.init) {
-					super = public.init.bind(this);
-					delete public.init;
-				} else if (protected.init) {
-					super = protected.init.bind(this);
-					delete protected.init;
-				} else {
-					throw new Error('Cannot extend from class ' + self.getParentClass().getName());
-				}
-				
-				for (var name in protected) {
-					if (protected[name] instanceof Function) {
-						super[name] = protected[name].bind(this);
-					}
-				}
-			}
-			
-			var oldPrivate = private;
-			private = scope[_name] = Object.create(protected);
-			_classDescriptor.call(this, super);
-			
-			var initScope = public.init? public: protected;
-			if (initScope.init && !/\Wsuper\s*\(/.test(initScope.init.toString())) {
-				var init = initScope.init;
-				init.class = self;
-				
-				initScope.init = function() {
-					super();
-					init.apply(this, arguments);
-				}
-			} else if (!private.init) {
-				public.init = super;
-			}
-			
-			for (var name in private) {
-				var prop = private[name];
-				if (name != 'init' && !(name in this)) {
-					Object.defineProperty(this, name, new Delegator(scope, name));
-				}
-				
-				if (protected.hasOwnProperty(name) && public.hasOwnProperty(name)) {
-					delete protected[name];
-				}
-				
-				if (prop instanceof Function && !prop.class) {
-					prop.class = self;
-				}
-			}
-			
-			private = oldPrivate;
-			
-			if (this.constructor == _classConstructor) {
-				if (!public.init)
-					throw new Error('Can not instantiate classes with none public constructors');
-				
-				public.init.apply(this, arguments);
-				
-//				this.scope = scope;
-				
-				public = oldPublic;
-				protected = oldProtected;
-				scope = oldScope;
-			}
-		}
-	}
-	
-	//init the Class class 
-	public = {};
-	Class.call(public);
-	public.init(null, 'Class', Class);
-	var cls = public.getConstructor();
-	
-	public = undefined;
-
-	Class = new cls(null, 'Class', Class).getConstructor();
-	Class.class.constructor = Class;
-	Class.prototype = cls.prototype;
+	});
 })();
+
+var Trait = function() {};
+
+Array.prototype.initialize = function() {
+	for (var i = 0; i < arguments.length; ++i)
+		this[i] = arguments[i];
+	
+	this.length = arguments.length;
+};
+
+Error.prototype.initialize = function(message) {
+	this.message = message;
+};

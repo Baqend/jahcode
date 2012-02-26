@@ -5,49 +5,101 @@
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
 <script type="text/javascript" src="class.js"></script>
 <script type="text/javascript">
-Object.extend('MyClass', function() {
-	private.myVar = 'test';
-	protected.test = 'muh';
-	private.args = null;
-	
-	public.init = function(a, b, c) {
-		console.log(this.test);
-		
-		this.args = [a, b, c];
-	}
-	
-	public.testMethod = function() {
-		  return this.myVar;
-	}
-	
-	public.getArgs = function() {
-		return this.args;
-	}
-	
-	protected.protectedMethod = function() {
-	      return this.myVar;
-	  }
+var start = new Date().getTime();
+var TraitA = Trait.inherit({
+	a: function() {
+        return " Call a from TraitA"; 
+    },
+    
+    d: function(sum) {
+        return sum + 20;
+    }
 });
 
-MyClass.extend('MyExtClass', function(super) {
-	private.myVar = 'test2';
-	  
-  public.testMethod = function() {
-	  return super.testMethod();
-  }
-  
-  public.test2Method = function() {
-	  return this.myVar;
-  }
-  
-  protected.protectedMethod = function() {
-      return 'super ' + super.protectedMethod();
-  }
-  
-  public.pubMethod = function() {
-	  return this.protectedMethod();
-  } 
+var TraitB = Trait.inherit({
+	a: function() {
+        return " Call a from TraitB " + this.superCall(); 
+    },
+    
+    d: function(sum) {
+        return this.superCall(sum) + 20;
+    }
 });
+
+var MyClassA = Object.inherit(TraitA, TraitB, {
+	a: function() {
+		return " Call a from MyClassA " + this.superCall(); 
+	}
+});
+
+var TraitC = TraitB.inherit({
+    a: function() {
+        return " Call a from TraitC " + this.superCall(); 
+    },
+    
+    c: function(sum) {
+        return sum + 20;
+    }
+});
+
+var MyClassB = MyClassA.inherit(TraitA, TraitB, TraitC, {
+    a: function() {
+        return " Call a from MyClassB " + this.superCall(); 
+    },
+    
+    b: function() {
+        return 'test';
+    }
+});
+
+console.log('init: ' + (new Date().getTime() - start));
+
+var objs = new Array(100000);
+start = new Date().getTime();
+for (var i = 0; i < 1000000; ++i) {
+    objs[i] = new MyClassB();
+}
+
+console.log('create: ' + (new Date().getTime() - start));
+
+start = new Date().getTime();
+for (var i = 0; i < 100000; ++i) {
+	objs[i].a();
+}
+
+console.log('a: ' + (new Date().getTime() - start));
+
+start = new Date().getTime();
+for (var i = 0; i < 1000000; ++i) {
+	objs[i].b();
+}
+
+console.log('b: ' + (new Date().getTime() - start));
+
+start = new Date().getTime();
+var sum = 0;
+for (var i = 0; i < 1000000; ++i) {
+    sum = objs[i].c(sum);
+}
+
+console.log('c: ' + sum + ' ' + (new Date().getTime() - start));
+
+start = new Date().getTime();
+var sum2 = 0;
+for (var i = 0; i < 100000; ++i) {
+    sum2 = objs[i].d(sum);
+}
+
+console.log('d: ' + sum2 + ' ' + (new Date().getTime() - start));
+
+start = new Date().getTime();
+var result = true;
+for (var i = 0; i < 100000; ++i) {
+    result &= TraitA(objs[i]) != null; 
+}
+
+console.log('isA: ' + result + ' ' + (new Date().getTime() - start));
+
 </script>
 <title>Insert title here</title>
 </head>
