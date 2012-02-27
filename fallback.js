@@ -8,7 +8,9 @@
 		create: function(proto) {
 			Prototype.prototype = proto;
 			
-			return new Prototype();
+			var instance = new Prototype();
+			if (!instance.__proto__)
+				instance.__proto__ = proto;
 		},
 		defineProperty: function(obj, name, descr) {
 			if ('value' in descr) {
@@ -52,6 +54,9 @@
 					names.push(name);
 			
 			return names;
+		},
+		getPrototypeOf: function(obj) {
+			return obj.__proto__;
 		}
 	});
 

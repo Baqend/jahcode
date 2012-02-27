@@ -4,6 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
 <script type="text/javascript" src="class.js"></script>
+<script type="text/javascript" src="EventHandler.js"></script>
 <script type="text/javascript">
 var start = new Date().getTime();
 var TraitA = Trait.inherit({
@@ -99,6 +100,31 @@ for (var i = 0; i < 100000; ++i) {
 }
 
 console.log('isA: ' + result + ' ' + (new Date().getTime() - start));
+
+MyEventHandlerClass = Object.inherit(EventHandler, {
+	_bla: 4,
+	huhu: 'muh',
+	
+	initialize: function() {
+		this.huhu = 3;
+		
+		for (name in this.on)
+			  window.addEventListener(name, this.on[name]);
+	},
+	doSomethingOnClick: function() {
+        alert(this.bla);
+	},
+	on: {
+        click: function() {
+            this.doSomethingOnClick();
+        },
+        mousemove: function(e) {
+            this.bla = e.x;
+        }
+    }
+});
+
+var el = new MyEventHandlerClass()
 
 </script>
 <title>Insert title here</title>
