@@ -1,17 +1,16 @@
-
-Function.prototype.extend = function(target, props) {
-	if (!props) {
-		props = target;
-		target = this;
-	}
-	
-	for (name in props) {
-		if (props.hasOwnProperty(name))
-			target[name] = props[name];
-	}
-};
-
-Function.Empty = function() {};
+if (!Function.prototype.extend) {	
+	Function.prototype.extend = function(target, props) {
+		if (!props) {
+			props = target;
+			target = this;
+		}
+		
+		for (name in props) {
+			if (props.hasOwnProperty(name))
+				target[name] = props[name];
+		}
+	};
+}
 
 Object.extend(Function.prototype, {
 	linearizedTypes: [Object],
@@ -113,7 +112,7 @@ Object.extend(Object.properties, {
 });
 
 Object.extend(Object.methods, {
-	initialize: Function.Empty,
+	initialize: function() {},
 	superCall: function() {
 		var caller = arguments.callee.caller;
 		
