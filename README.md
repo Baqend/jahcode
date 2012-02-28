@@ -178,4 +178,52 @@ However I found this way of type casting the most useful so it’s implemented d
     SimpleClass(myClass) // returns myClass
     SimpleTrait(myClass) // returns myClass
     MyFunkyClass(myClass) // returns null
-   
+
+ECMA 5 Based Getters and Setters
+--------------------------------
+
+Another new feature what was introduced with ECMA 5 was the possibility to declare getters and setters. 
+You can used them already in the class body definition of any class and they work as same to the standard
+
+Note: this feature works only in ECMA 5 based browsers, if you want to support older browser just don't use this feature.
+The other parts of this framework works also in older browser if you import the fallback.js 
+
+    var GetterSetterClass = Object.inherit(SimpleTrait, {
+        text: {
+            get: function() {
+                return this._text;
+            },
+            set: function(newText) {
+                this._text = newText;
+                this.saySomething();
+            },
+            enumerable: false //Also the other ECMA 5 settings for declaring properties works here
+        }
+    });
+    
+    var myClass = new GetterSetterClass();
+    myClass.text = 'Hello World!'; // alert 'Hello World!'
+
+EventHandler Trait
+------------------
+
+My first custom Trait, improves the way to declare event handlers. As you know Objects in JavaScript are first class objects
+so methods lose they scope if you bind them as event handler. In most cases we don't want to lose the reference to the origin 
+object who owns our event handler. So if you import the EventHandler.js you can declare your event handlers on a more common way.
+
+    var MyEventHandler = SimpleClass.inherit(EventHandler, { //just mixin the EventHandler trait and al your event handlers don't lose they scopes
+        on: { //declare your event handlers here
+            click: function() {
+                //this refers here to the MyEventHandler instance
+                this.saySomething();
+            }
+        },
+        initialize: {
+            for (name in this.on) //register all event handlers on the window object
+                window.addEventListener(name, this.on[name]);
+        }
+    });
+    
+    var myHandler = new MyEventHandler();
+    
+
