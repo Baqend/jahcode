@@ -105,8 +105,8 @@ Object.extend(Object.properties, {
 			};
 		}
 	},
-	extend: function(proto, objectDescriptor) {
-		Object.extend(proto.constructor, objectDescriptor.extend);
+	constructor: function(proto, objectDescriptor) {
+		Object.extend(proto.constructor, objectDescriptor.constructor);
 		return true;
 	}
 });
