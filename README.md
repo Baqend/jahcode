@@ -199,7 +199,7 @@ It is also possible to mix classes written in this framework with classes that a
         },
         
         saySomething: function() {
-            alert(this.getSomethingToSay();
+            alert(this.getSomethingToSay());
         }
     });
     
