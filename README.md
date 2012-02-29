@@ -195,7 +195,7 @@ It is also possible to mix classes written in this framework with classes that a
     MyComplexClass = MyAlreadyDefiniedClass.inherit({
         initialize: function() {
             //will be forwarded to the traditional constructor
-            this.superCall('My relay complex message');
+            this.superCall('My really complex message');
         },
         
         saySomething: function() {
@@ -204,12 +204,12 @@ It is also possible to mix classes written in this framework with classes that a
     });
     
     var myComplexObject = new MyComplexClass();
-    myComplexObject.saySomething(); // alert 'My relay complex message'
+    myComplexObject.saySomething(); // alert 'My really complex message'
     
     myComplexObject.isInstanceOf(MyAlreadyDefiniedClass) // returns true
     myComplexObject.isInstanceOf(MyComplexClass) // returns true
 
-Let's have a bit more fun with jQuery and this relay cool feature
+Let's have a bit more fun with jQuery and this really cool feature
 The jQuery constructor is a little bit hidden in the API, but we can also 
 extend him
 
