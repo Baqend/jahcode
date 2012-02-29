@@ -53,7 +53,7 @@ Object.extend(Function.prototype, {
 
 Object.extend({
 	properties: {},
-	methods: Object.create(Object.prototype),
+	baseMethods: {},
 	
 	cloneOwnProperties: function(target, src) {
 		var names = Object.getOwnPropertyNames(src);
@@ -62,9 +62,27 @@ Object.extend({
 			Object.defineProperty(target, name, Object.getOwnPropertyDescriptor(src, name));			
 		}
 	},
+	
+	getBasePrototype: function(cls) {
+		if ('superCall' in cls.prototype)
+			return cls.prototype;
+		
+		if (!cls.basePrototype) {
+			cls.basePrototype = Object.create(cls.prototype);
+			Object.extend(cls.basePrototype, Object.baseMethods);
+			
+			if (!cls.basePrototype.initialize) {
+				cls.basePrototype.initialize = function() {
+					cls.apply(this, arguments);
+				};
+			}
+		}
+		
+		return cls.basePrototype;
+	},
 
 	createPrototypeChain: function(cls, parentClass, traits) {
-		var proto = parentClass === Object? Object.methods: parentClass.prototype;
+		var proto = Object.getBasePrototype(parentClass);
 		var linearizedTypes = parentClass.linearizedTypes.slice();
 		
 		for (var i = 0, trait; trait = traits[i]; ++i) {
@@ -111,8 +129,7 @@ Object.extend(Object.properties, {
 	}
 });
 
-Object.extend(Object.methods, {
-	initialize: function() {},
+Object.extend(Object.baseMethods, {
 	superCall: function() {
 		var caller = arguments.callee.caller;
 		
@@ -144,13 +161,16 @@ Object.extend(Object.methods, {
 
 var Trait = function() {};
 
-Array.prototype.initialize = function() {
+Object.getBasePrototype(Object).initialize = function() {
+};
+
+Object.getBasePrototype(Array).initialize = function() {
 	for (var i = 0; i < arguments.length; ++i)
 		this[i] = arguments[i];
 	
 	this.length = arguments.length;
 };
 
-Error.prototype.initialize = function(message) {
+Object.getBasePrototype(Error).initialize = function(message) {
 	this.message = message;
 };

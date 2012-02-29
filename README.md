@@ -179,6 +179,58 @@ However I found this way of type casting the most useful so it’s implemented d
     SimpleTrait(myClass) // returns myClass
     MyFunkyClass(myClass) // returns null
 
+Extending Traditional Classes
+-----------------------------
+
+It is also possible to mix classes written in this framework with classes that are written in traditional way
+
+    var MyAlreadyDefiniedClass = function(message) {
+        this.message = message;
+    }
+    
+    MyAlreadyDefiniedClass.prototype.getSomethingToSay = function() { // :-<
+        return this.message;
+    }
+    
+    MyComplexClass = MyAlreadyDefiniedClass.inherit({
+        initialize: function() {
+            //will be forwarded to the traditional constructor
+            this.superCall('My relay complex message');
+        },
+        
+        saySomething: function() {
+            alert(this.getSomethingToSay();
+        }
+    });
+    
+    var myComplexObject = new MyComplexClass();
+    myComplexObject.saySomething(); // alert 'My relay complex message'
+    
+    myComplexObject.isInstanceOf(MyAlreadyDefiniedClass) // returns true
+    myComplexObject.isInstanceOf(MyComplexClass) // returns true
+
+Let's have a bit more fun with jQuery and this relay cool feature
+The jQuery constructor is a little bit hidden in the API, but we can also 
+extend him
+
+    var TextBox = jQuery.fn.init.inherit({
+        initialize: function() {
+            //Let's select an dom element
+            this.superCall('.myCssClass');
+        },
+        
+        saySomething: function() {
+            //we use the inherited jQuery method here
+            this.text('Hello World'); 
+        }
+    });
+    
+    $(function() {
+        var textBox = new TextBox();
+        textBox.saySomething(); // will display 'Hello World' in the selected elements
+    });
+
+
 ECMA 5 Based Getters and Setters
 --------------------------------
 
