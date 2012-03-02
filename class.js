@@ -158,7 +158,7 @@ Object.extend(Object.baseMethods, {
 });
 
 function classOf(object) {
-	return Object.getPrototype(object).constructor;
+	return Object.getPrototypeOf(object).constructor;
 }
 
 var Trait = function() {};
