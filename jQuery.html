@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<script type="text/javascript" src="class.js"></script>
+<script type="text/javascript" src="lib/jquery-1.7.1.js"></script>
+<script type="text/javascript">
+
+Object.extend(Object.getBasePrototype(jQuery.fn.init), {
+	rootjQuery: jQuery(document),
+    initialize: function(selector, context) {
+    	this.constructor = jQuery;
+    	
+    	var ret = jQuery.fn.init.call(this, selector, context, this.rootjQuery);
+    	if (ret != this) {
+    		this.length = 0;
+    		this.context = ret.context;
+    		this.selector = ret.selector;
+
+            jQuery.merge(this, ret);
+    	}
+    }
+});
+
+var TextBox = jQuery.fn.init.inherit({
+    initialize: function() {
+        //Let's select an dom element
+        this.superCall('#test');
+        
+        this.appendTo('body');
+    },
+    
+    saySomething: function() {
+        //we use the inherited jQuery method here
+        this.text('Hello World'); 
+    }
+});
+
+var textBox;
+$(function() {
+    textBox = new TextBox();
+    textBox.saySomething(); // will display 'Hello World' in the selected elements
+});
+
+</script>
+<title>Insert title here</title>
+</head>
+<body>
+    <div id="test" class="myCssClass"></div>
+    <div class="myCssClass"></div>
+</body>
+</html>

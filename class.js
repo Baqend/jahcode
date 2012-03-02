@@ -15,10 +15,8 @@ if (!Function.prototype.extend) {
 Object.extend(Function.prototype, {
 	linearizedTypes: [Object],
 	inherit: function() {
-		var klass = function(objectToCast) {
-			if (!(this instanceof klass))
-				return objectToCast.isInstanceOf(klass)? objectToCast: null;
-			
+		var klass = function(toCast) {
+			if (!(this instanceof klass)) return toCast.isInstanceOf(klass)? toCast: null;
 			this.initialize.apply(this, arguments);
 		};
 		
@@ -148,7 +146,7 @@ Object.extend(Object.baseMethods, {
 		}
 	},
 	isInstanceOf: function(klass) {
-		return this instanceof klass || this.constructor.linearizedTypes.lastIndexOf(klass) != -1;
+		return this instanceof klass || classOf(this).linearizedTypes.lastIndexOf(klass) != -1;
 	},
 	asInstanceOf: function(klass) {
 		if (this.isInstanceOf(klass)) {
@@ -158,6 +156,10 @@ Object.extend(Object.baseMethods, {
 		}
 	}
 });
+
+function classOf(object) {
+	return Object.getPrototype(object).constructor;
+}
 
 var Trait = function() {};
 

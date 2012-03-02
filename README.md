@@ -209,27 +209,6 @@ It is also possible to mix classes written in this framework with classes that a
     myComplexObject.isInstanceOf(MyAlreadyDefiniedClass) // returns true
     myComplexObject.isInstanceOf(MyComplexClass) // returns true
 
-Let's have a bit more fun with jQuery and this really cool feature
-The jQuery constructor is a little bit hidden in the API, but we can also 
-extend him
-
-    var TextBox = jQuery.fn.init.inherit({
-        initialize: function() {
-            //Let's select an dom element
-            this.superCall('.myCssClass');
-        },
-        
-        saySomething: function() {
-            //we use the inherited jQuery method here
-            this.text('Hello World'); 
-        }
-    });
-    
-    $(function() {
-        var textBox = new TextBox();
-        textBox.saySomething(); // will display 'Hello World' in the selected elements
-    });
-
 
 ECMA 5 Based Getters and Setters
 --------------------------------
