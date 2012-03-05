@@ -242,7 +242,7 @@ My first custom Trait, improves the way to declare event handlers. As you know O
 so methods lose they scope if you bind them as event handler. In most cases we don't want to lose the reference to the origin 
 object who owns our event handler. So if you import the EventHandler.js you can declare your event handlers on a more common way.
 
-    var MyEventHandler = SimpleClass.inherit(EventHandler, { //just mixin the EventHandler trait and al your event handlers don't lose they scopes
+    var MyEventHandler = SimpleClass.inherit(EventHandler, { //just mixin the EventHandler trait and al your event handlers don't lose there scopes
         on: { //declare your event handlers here
             click: function() {
                 //this refers here to the MyEventHandler instance

@@ -163,7 +163,31 @@ Object.extend(Object.basePrototype, {
 });
 
 function classOf(object) {
-	return Object.getPrototypeOf(object).constructor;
+	return Object.getPrototypeOf(Object(object)).constructor;
 }
 
 var Trait = function() {};
+
+for (var i = 0, cls; cls = [Boolean, Number, String, Array, Function, Date, RegExp, Error][i]; ++i) {
+	Object.extend(cls.prototype, {
+		isInstanceOf: function(klass) {
+			return this instanceof klass;
+		},
+		asInstanceOf: Object.basePrototype.asInstanceOf
+	});
+}
+
+Object.extend(Array.prototype, {
+	initialize: function() {
+		for (var i = 0; i < arguments.length; ++i)
+			this[i] = arguments[i];
+		
+		this.length = arguments.length;
+	}
+});
+
+Object.extend(Error.prototype, {
+	initialize: function(message) {
+		this.message = message;
+	}
+});
