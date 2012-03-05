@@ -11,7 +11,7 @@ Object.extend(Object.getBasePrototype(jQuery.fn.init), {
 	rootjQuery: jQuery(document),
     initialize: function(selector, context) {
     	this.constructor = jQuery;
-    	
+        
     	var ret = jQuery.fn.init.call(this, selector, context, this.rootjQuery);
     	if (ret != this) {
     		this.length = 0;

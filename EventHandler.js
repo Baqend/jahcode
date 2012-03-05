@@ -1,6 +1,6 @@
 Object.extend(Object.properties, {
 	on: function(proto, objectDescriptor) {
-		if (proto.isInstanceOf(EventHandler)) {
+		if (proto.constructor.linearizedTypes.lastIndexOf(EventHandler) != -1) {
 			proto.constructor.on = objectDescriptor.on;
 			return true;
 		}
@@ -11,10 +11,11 @@ var EventHandler = Trait.inherit({
 	initialize: function() {
 		this.on = {};
 		
-		var types = this.constructor.linearizedTypes;
-		for (var i = types.length - 1, type; (type = types[i]) && type !== EventHandler; --i)
+		var types = classOf(this).linearizedTypes;
+		for (var i = types.length - 1, type; (type = types[i]) && type !== EventHandler; --i) {
 			if (type.on)
 				this.bindEventHandlers(type.on);
+		}
 	},
 	
 	bindEventHandlers: function(handlers, override) {

@@ -9,8 +9,10 @@
 			Prototype.prototype = proto;
 			
 			var instance = new Prototype();
-			if (!instance.__proto__)
+			if (!instance.hasOwnProperty('__proto__'))
 				instance.__proto__ = proto;
+			
+			return instance;
 		},
 		defineProperty: function(obj, name, descr) {
 			if ('value' in descr) {
@@ -50,13 +52,13 @@
 		keys: function(obj) {
 			var names = [];
 			for (var name in obj)
-				if (obj.hasOwnProperty(name))
+				if (obj.hasOwnProperty(name) && name != '__proto__')
 					names.push(name);
 			
 			return names;
 		},
 		getPrototypeOf: function(obj) {
-			return obj.__proto__;
+			return obj.__proto__ || obj.constructor.prototype;
 		}
 	});
 
@@ -69,5 +71,50 @@
 				return func.apply(self, arguments);
 			};
 		};
+	}
+	
+	if (!Array.prototype.indexOf) {
+		Object.extend(Array.prototype, {
+			indexOf: function(searchElement, fromIndex) {
+				if (!fromIndex)
+					fromIndex = 0;
+				
+				if (fromIndex < 0)
+					fromIndex = Math.max(0, this.length + fromIndex);
+				
+				for (var i = fromIndex; i < this.length; ++i) {
+					if (this[i] === searchElement)
+						return i;
+				}
+					
+				return -1;
+			},
+			lastIndexOf: function(searchElement, fromIndex) {
+				if (!fromIndex)
+					fromIndex = -1;
+				
+				if (fromIndex < 0)
+					fromIndex = this.length + fromIndex;
+				
+				fromIndex = Math.min(this.length - 1, fromIndex);
+				
+				for (var i = fromIndex; i >= 0; --i) {
+					if (this[i] === searchElement)
+						return i;
+				}
+					
+				return -1;
+			}
+		});
+	}
+	
+	if (![].__proto__) {
+		var inherit = Function.prototype.inherit;
+		Function.prototype.inherit = function() {
+			var cls = inherit.apply(this, arguments);
+			cls.wrappedPrototype = cls.prototype;
+			cls.prototype = Object.create(cls.prototype);
+			return cls;
+		}
 	}
 })();

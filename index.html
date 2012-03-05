@@ -4,8 +4,10 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
 <script type="text/javascript" src="class.js"></script>
+<script type="text/javascript" src="fallback.js"></script>
 <script type="text/javascript" src="EventHandler.js"></script>
 <script type="text/javascript">
+
 var start = new Date().getTime();
 var TraitA = Trait.inherit({
 	a: function() {
@@ -27,7 +29,7 @@ var TraitB = Trait.inherit({
     }
 });
 
-var MyClassA = Object.inherit(TraitA, TraitB, {
+var MyClassA = TraitA.inherit(TraitB, {
 	a: function() {
 		return " Call a from MyClassA " + this.superCall(); 
 	}
@@ -53,79 +55,106 @@ var MyClassB = MyClassA.inherit(TraitA, TraitB, TraitC, {
     }
 });
 
-console.log('init: ' + (new Date().getTime() - start));
+var c = new MyClassB();
 
-var objs = new Array(100000);
-start = new Date().getTime();
-for (var i = 0; i < 1000000; ++i) {
-    objs[i] = new MyClassB();
+var t = MyClassB.linearizedTypes;
+console.log('classes')
+console.log(t[0] == Object);
+console.log(t[1] == TraitA);
+console.log(t[2] == TraitB);
+console.log(t[3] == MyClassA);
+console.log(t[4] == TraitC);
+console.log(t[5] == MyClassB);
+
+console.log('protos');
+var proto = c;
+for (var i = 5; i > 0; i--) {
+	proto = Object.getPrototypeOf(proto);
+    
+	console.log(proto.constructor == t[i]? true: t.indexOf(proto.constructor));
 }
 
-console.log('create: ' + (new Date().getTime() - start));
+console.log(c.a());
 
-start = new Date().getTime();
-for (var i = 0; i < 100000; ++i) {
-	objs[i].a();
-}
-
-console.log('a: ' + (new Date().getTime() - start));
-
-start = new Date().getTime();
-for (var i = 0; i < 1000000; ++i) {
-	objs[i].b();
-}
-
-console.log('b: ' + (new Date().getTime() - start));
-
-start = new Date().getTime();
-var sum = 0;
-for (var i = 0; i < 1000000; ++i) {
-    sum = objs[i].c(sum);
-}
-
-console.log('c: ' + sum + ' ' + (new Date().getTime() - start));
-
-start = new Date().getTime();
-var sum2 = 0;
-for (var i = 0; i < 100000; ++i) {
-    sum2 = objs[i].d(sum);
-}
-
-console.log('d: ' + sum2 + ' ' + (new Date().getTime() - start));
-
-start = new Date().getTime();
-var result = true;
-for (var i = 0; i < 100000; ++i) {
-    result &= TraitA(objs[i]) != null; 
-}
-
-console.log('isA: ' + result + ' ' + (new Date().getTime() - start));
-
-var MyEventHandlerClass = Object.inherit(EventHandler, {
-	_bla: 4,
-	huhu: 'muh',
+	console.log('init: ' + (new Date().getTime() - start));
 	
-	initialize: function() {
-		this.huhu = 3;
+	var objs = new Array(100000);
+	start = new Date().getTime();
+	for (var i = 0; i < 100000; ++i) {
+	    objs[i] = new MyClassB();
+	}
+	
+	console.log('create: ' + (new Date().getTime() - start));
+	
+	start = new Date().getTime();
+	for (var i = 0; i < 100000; ++i) {
+		objs[i].a();
+	}
+	
+	console.log('a: ' + (new Date().getTime() - start));
+	
+	start = new Date().getTime();
+	for (var i = 0; i < 100000; ++i) {
+		objs[i].b();
+	}
+	
+	console.log('b: ' + (new Date().getTime() - start));
+	
+	start = new Date().getTime();
+	var sum = 0;
+	for (var i = 0; i < 100000; ++i) {
+	    sum = objs[i].c(sum);
+	}
+	
+	console.log('c: ' + sum + ' ' + (new Date().getTime() - start));
+	
+	start = new Date().getTime();
+	var sum2 = 0;
+	for (var i = 0; i < 100000; ++i) {
+	    sum2 = objs[i].d(sum);
+	}
+	
+	console.log('d: ' + sum2 + ' ' + (new Date().getTime() - start));
+	
+	start = new Date().getTime();
+	var result = true;
+	for (var i = 0; i < 100000; ++i) {
+	    result &= TraitA(objs[i]) != null; 
+	}
+	
+	console.log('isA: ' + result + ' ' + (new Date().getTime() - start));
+	
+	var MyEventHandlerClass = Object.inherit(EventHandler, {
+		_bla: 4,
+		huhu: 'muh',
 		
-		for (name in this.on)
-			  window.addEventListener(name, this.on[name]);
-	},
-	doSomethingOnClick: function() {
-        alert(this.bla);
-	},
-	on: {
-        click: function() {
-            this.doSomethingOnClick();
-        },
-        mousemove: function(e) {
-            this.bla = e.x;
-        }
-    }
-});
+		initialize: function() {
+			this.huhu = 3;
+			
+			for (name in this.on) {
+			    if (document.addEventListener) {
+			    	document.addEventListener(name, this.on[name]);
+			    } else {
+			    	document.attachEvent('on' + name, this.on[name]);
+			    }
+			}
+		},
+		doSomethingOnClick: function() {
+	        alert(this.bla);
+		},
+		on: {
+	        click: function() {
+	            this.doSomethingOnClick();
+	        },
+	        mousemove: function(e) {
+	            this.bla = e.x;
+	        }
+	    }
+	});
+	
+	var el = new MyEventHandlerClass()
 
-var el = new MyEventHandlerClass()
-
+	
 </script>
 <title>Insert title here</title>
 </head>

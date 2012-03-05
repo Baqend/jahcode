@@ -9,6 +9,8 @@ if (!Function.prototype.extend) {
 			if (props.hasOwnProperty(name))
 				target[name] = props[name];
 		}
+		
+		return target;
 	};
 }
 
@@ -51,8 +53,7 @@ Object.extend(Function.prototype, {
 
 Object.extend({
 	properties: {},
-	baseMethods: {},
-	
+	basePrototype: {},
 	cloneOwnProperties: function(target, src) {
 		var names = Object.getOwnPropertyNames(src);
 		for (var i = 0; i < names.length; ++i) {
@@ -60,25 +61,25 @@ Object.extend({
 			Object.defineProperty(target, name, Object.getOwnPropertyDescriptor(src, name));			
 		}
 	},
-	
 	getBasePrototype: function(cls) {
-		if ('superCall' in cls.prototype)
-			return cls.prototype;
+		var proto = cls.wrappedPrototype? cls.wrappedPrototype: cls.prototype;
+		
+		if (proto.superCall)
+			return proto;
 		
 		if (!cls.basePrototype) {
 			cls.basePrototype = Object.create(cls.prototype);
-			Object.extend(cls.basePrototype, Object.baseMethods);
+			Object.extend(cls.basePrototype, Object.basePrototype);
 			
-			if (!cls.basePrototype.initialize) {
+			if (!cls.prototype.initialize) {
 				cls.basePrototype.initialize = function() {
 					cls.apply(this, arguments);
 				};
 			}
 		}
-		
+			
 		return cls.basePrototype;
 	},
-
 	createPrototypeChain: function(cls, parentClass, traits) {
 		var proto = Object.getBasePrototype(parentClass);
 		var linearizedTypes = parentClass.linearizedTypes.slice();
@@ -94,7 +95,7 @@ Object.extend({
 					
 					proto = Object.create(proto);
 					proto.constructor = type;
-					Object.cloneOwnProperties(proto, type.prototype);
+					Object.cloneOwnProperties(proto, type.wrappedPrototype? type.wrappedPrototype: type.prototype);
 				}					
 			}
 		}
@@ -127,7 +128,8 @@ Object.extend(Object.properties, {
 	}
 });
 
-Object.extend(Object.baseMethods, {
+Object.extend(Object.basePrototype, {
+	initialize: function() {},
 	superCall: function() {
 		var caller = arguments.callee.caller;
 		
@@ -137,6 +139,9 @@ Object.extend(Object.baseMethods, {
 			var proto = this;
 			while (!proto.hasOwnProperty(methodName) || proto[methodName] !== caller) {
 				proto = Object.getPrototypeOf(proto);
+
+				if (proto == Object.prototype)
+					throw new ReferenceError("superCall can't determine any super method");
 			}
 			proto = Object.getPrototypeOf(proto);
 			
@@ -162,17 +167,3 @@ function classOf(object) {
 }
 
 var Trait = function() {};
-
-Object.getBasePrototype(Object).initialize = function() {
-};
-
-Object.getBasePrototype(Array).initialize = function() {
-	for (var i = 0; i < arguments.length; ++i)
-		this[i] = arguments[i];
-	
-	this.length = arguments.length;
-};
-
-Object.getBasePrototype(Error).initialize = function(message) {
-	this.message = message;
-};
