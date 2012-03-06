@@ -75,11 +75,11 @@ Note: if an initialize method doesn’t call the parents initialize method the p
 Static members
 --------------
 
-To declare static members (means members that are applied to the class object itself) you can make use of the special property constructor.
-The constructor property is a special property which can be optionally set in the class body.
+To declare static members (means members that are applied to the class object itself) you can make use of the special property extend.
+The extend property is a special property which can be optionally set in the class body.
 
     var StaticMembersClass = SimpleClass.inherit({
-        constructor: {
+        extend: {
             create: function() {
                 return new this(); //this refers here to the class object itself
             }

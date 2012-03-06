@@ -1,5 +1,12 @@
+/*!
+ * Class Declaration Framework v0.9
+ * https://github.com/fbuecklers/js-class
+ *
+ * Copyright 2012, Florian Buecklers
+ * Licensed under the MIT license.  
+ */
 (function() {
-	//Add support for ff 3 and some older webkit versions
+	//Add support for ff 3 older webkit versions and IE below 9
 	if (Object.create)
 		return;
 	
@@ -108,7 +115,7 @@
 		});
 	}
 	
-	Trait.prototype = Object.create(Object.basePrototype);
+	Trait = Object.inherit({});
 	
 	if (![].__proto__) {
 		var inherit = Function.prototype.inherit;

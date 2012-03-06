@@ -1,3 +1,10 @@
+/*!
+ * Class Declaration Framework v0.9
+ * https://github.com/fbuecklers/js-class
+ *
+ * Copyright 2012, Florian Buecklers
+ * Licensed under the MIT license.  
+ */
 if (!Function.prototype.extend) {	
 	Function.prototype.extend = function(target, props) {
 		if (!props) {
@@ -90,7 +97,7 @@ Object.extend({
 			
 			var linearizedTraitTypes = trait.linearizedTypes;
 			for (var j = 0, type; type = linearizedTraitTypes[j]; ++j) {
-				if (linearizedTypes.indexOf(type) == -1) {
+				if (linearizedTypes.indexOf(type) == -1 && type != Trait) {
 					linearizedTypes.push(type);
 					
 					proto = Object.create(proto);
@@ -171,9 +178,8 @@ Object.extend(Object.basePrototype, {
 	}
 });
 
-function Trait() {};
 if (Object.create)
-	Trait.prototype = Object.create(Object.basePrototype);
+	Trait = Object.inherit({});
 
 function classOf(object) {
 	return Object.getPrototypeOf(Object(object)).constructor;

@@ -70,7 +70,7 @@ TestCase("TestIneritance", {
 		assertNotUndefined(ClassB);
 	},
 	testTraitA : function() {
-		var types = [Object, TraitA];
+		var types = [Object, Trait, TraitA];
 		var otherTypes = [TraitB, TraitC, TraitD, ClassA, ClassB];
 		assertEquals(types, TraitA.linearizedTypes);
 		
@@ -95,9 +95,11 @@ TestCase("TestIneritance", {
 		assertNotIsInstanceOf(otherTypes, t);
 		assertNotAsInstanceOf(otherTypes, t);
 		assertNotClassCast(otherTypes, t);
+		
+		assertSame(TraitA, classOf(t));
 	},
 	testTraitB : function() {
-		var types = [Object, TraitA, TraitB];
+		var types = [Object, Trait, TraitA, TraitB];
 		var otherTypes = [TraitC, TraitD, ClassA, ClassB];
 		assertEquals(types, TraitB.linearizedTypes);
 		
@@ -123,9 +125,11 @@ TestCase("TestIneritance", {
 		assertNotIsInstanceOf(otherTypes, t);
 		assertNotAsInstanceOf(otherTypes, t);
 		assertNotClassCast(otherTypes, t);
+		
+		assertSame(TraitB, classOf(t));
 	},
 	testTraitC : function() {
-		var types = [Object, TraitA, TraitC];
+		var types = [Object, Trait, TraitA, TraitC];
 		var otherTypes = [TraitB, TraitD, ClassA, ClassB];
 		assertEquals(types, TraitC.linearizedTypes);
 		
@@ -151,9 +155,11 @@ TestCase("TestIneritance", {
 		assertNotIsInstanceOf(otherTypes, t);
 		assertNotAsInstanceOf(otherTypes, t);
 		assertNotClassCast(otherTypes, t);
+		
+		assertSame(TraitC, classOf(t));
 	},
 	testTraitD : function() {
-		var types = [Object, TraitA, TraitB, TraitC, TraitD];
+		var types = [Object, Trait, TraitA, TraitB, TraitC, TraitD];
 		var otherTypes = [ClassA, ClassB];
 		assertEquals(types, TraitD.linearizedTypes);
 		
@@ -181,10 +187,12 @@ TestCase("TestIneritance", {
 		assertNotIsInstanceOf(otherTypes, t);
 		assertNotAsInstanceOf(otherTypes, t);
 		assertNotClassCast(otherTypes, t);
+		
+		assertSame(TraitD, classOf(t));
 	},
 	testClassA: function() {
 		var types = [Object, TraitA, TraitB, ClassA];
-		var otherTypes = [TraitC, TraitD, ClassB];
+		var otherTypes = [TraitC, TraitD, ClassB, Trait];
 		assertEquals(types, ClassA.linearizedTypes);
 		
 		var t = new ClassA();
@@ -210,10 +218,12 @@ TestCase("TestIneritance", {
 		assertNotIsInstanceOf(otherTypes, t);
 		assertNotAsInstanceOf(otherTypes, t);
 		assertNotClassCast(otherTypes, t);
+		
+		assertSame(ClassA, classOf(t));
 	},
 	testClassB : function() {
 		var types = [Object, TraitA, TraitB, ClassA, TraitC, TraitD, ClassB];
-		var otherTypes = [];
+		var otherTypes = [Trait];
 		assertEquals(types, ClassB.linearizedTypes);
 		
 		var t = new ClassB();
@@ -242,6 +252,8 @@ TestCase("TestIneritance", {
 		assertNotIsInstanceOf(otherTypes, t);
 		assertNotAsInstanceOf(otherTypes, t);
 		assertNotClassCast(otherTypes, t);
+		
+		assertSame(ClassB, classOf(t));
 	},
 	testConstructors : function() {
 		var myClass = Object.inherit({
@@ -313,7 +325,7 @@ TestCase("TestIneritance", {
 				assertSame(3, c);
 			}
 		});
-		console.log('test');
+		
 		assertIsInstanceOf(myClass, myClass.create());
 		assertIsInstanceOf(myClass, myClass.getInstance());
 	},
@@ -337,5 +349,26 @@ TestCase("TestIneritance", {
 		assertAsInstanceOf(Function, function(){});
 		assertAsInstanceOf(Error, new Error());
 		assertAsInstanceOf([Error, TypeError], new TypeError());
+	},
+	testNativeClassOf: function() {
+		assertSame(Boolean, classOf(true));
+		assertSame(Boolean, classOf(false));
+		assertSame(Boolean, classOf(Boolean(true)));
+		assertSame(Number, classOf(0));
+		assertSame(Number, classOf(1));
+		assertSame(Number, classOf(17.43));
+		assertSame(Number, classOf(Number(1)));
+		assertSame(String, classOf(""));
+		assertSame(String, classOf("a"));
+		assertSame(String, classOf(String("a")));
+		assertSame(RegExp, classOf(/foo/));
+		assertSame(RegExp, classOf(new RegExp("asdf")));
+		assertSame(Array, classOf([]));
+		assertSame(Array, classOf([1]));
+		assertSame(Date, classOf(new Date()));
+		assertSame(Function, classOf(new Function("return;")));
+		assertSame(Function, classOf(function(){}));
+		assertSame(Error, classOf(new Error()));
+		assertSame(TypeError, classOf(new TypeError()));
 	}
 });
