@@ -115,10 +115,19 @@ Object.extend({
 Object.extend(Object.properties, {
 	initialize: function(proto, objectDescriptor) {
 		var init = objectDescriptor.initialize;
-		if (proto instanceof Trait || !/this\.superCall\(/.test(init.toString())) {
+		var test = /this\.superCall\(/.test(init.toString());
+		if (proto instanceof Trait) {
+			if (test)
+				throw new TypeError('trait constructors can not call super constructors directly');
+			
 			objectDescriptor.initialize = function() {
 				this.superCall.apply(this, arguments);
 				init.call(this);
+			};
+		} else if (!test) {
+			objectDescriptor.initialize = function() {
+				this.superCall.call(this);
+				init.apply(this, arguments);
 			};
 		}
 	},
@@ -162,11 +171,12 @@ Object.extend(Object.basePrototype, {
 	}
 });
 
+function Trait() {};
+Trait.prototype = Object.create(Object.basePrototype);
+
 function classOf(object) {
 	return Object.getPrototypeOf(Object(object)).constructor;
 }
-
-var Trait = function() {};
 
 for (var i = 0, cls; cls = [Boolean, Number, String, Array, Function, Date, RegExp, Error][i]; ++i) {
 	Object.extend(cls.prototype, {
