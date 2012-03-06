@@ -131,8 +131,8 @@ Object.extend(Object.properties, {
 			};
 		}
 	},
-	constructor: function(proto, objectDescriptor) {
-		Object.extend(proto.constructor, objectDescriptor.constructor);
+	extend: function(proto, objectDescriptor) {
+		Object.extend(proto.constructor, objectDescriptor.extend);
 		return true;
 	}
 });
@@ -172,7 +172,8 @@ Object.extend(Object.basePrototype, {
 });
 
 function Trait() {};
-Trait.prototype = Object.create(Object.basePrototype);
+if (Object.create)
+	Trait.prototype = Object.create(Object.basePrototype);
 
 function classOf(object) {
 	return Object.getPrototypeOf(Object(object)).constructor;

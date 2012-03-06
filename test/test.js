@@ -299,7 +299,7 @@ TestCase("TestIneritance", {
 	},
 	testStaticMembers: function() {
 		var myClass = Object.inherit({
-			constructor: {
+			extend: {
 				create: function() {
 					return new this(1, 2, 3);
 				},
@@ -313,7 +313,7 @@ TestCase("TestIneritance", {
 				assertSame(3, c);
 			}
 		});
-
+		console.log('test');
 		assertIsInstanceOf(myClass, myClass.create());
 		assertIsInstanceOf(myClass, myClass.getInstance());
 	},

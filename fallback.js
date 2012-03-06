@@ -108,6 +108,8 @@
 		});
 	}
 	
+	Trait.prototype = Object.create(Object.basePrototype);
+	
 	if (![].__proto__) {
 		var inherit = Function.prototype.inherit;
 		Function.prototype.inherit = function() {
@@ -115,6 +117,6 @@
 			cls.wrappedPrototype = cls.prototype;
 			cls.prototype = Object.create(cls.prototype);
 			return cls;
-		}
+		};
 	}
 })();
