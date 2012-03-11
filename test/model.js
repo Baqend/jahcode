@@ -1,4 +1,3 @@
-var start = new Date().getTime();
 var TraitA = Trait.inherit({
 	initialize: function() {
 		this.fieldA = true;

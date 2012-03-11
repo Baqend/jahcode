@@ -5,6 +5,8 @@
  * Copyright 2012, Florian Buecklers
  * Licensed under the MIT license.  
  */
+var fakePrototype = Object.getPrototypeOf({constructor: String}) == String.prototype;
+
 if (!Function.prototype.extend) {	
 	Function.prototype.extend = function(target, props) {
 		if (!props) {
@@ -25,7 +27,7 @@ Object.extend(Function.prototype, {
 	linearizedTypes: [Object],
 	inherit: function() {
 		var klass = function(toCast) {
-			if (!(this instanceof klass)) return toCast.isInstanceOf(klass)? toCast: null;
+			if (!(this instanceof klass)) return toCast && toCast.isInstanceOf(klass)? toCast: null;
 			this.initialize.apply(this, arguments);
 		};
 		
@@ -112,7 +114,13 @@ Object.extend({
 		proto = Object.create(proto);
 		proto.constructor = cls;
 		
-		cls.prototype = proto;
+		if (fakePrototype) {
+			cls.wrappedPrototype = proto;
+			cls.prototype = Object.create(proto);
+		} else {				
+			cls.prototype = proto;
+		}
+			
 		cls.linearizedTypes = linearizedTypes;
 		
 		return proto;
@@ -146,8 +154,8 @@ Object.extend(Object.properties, {
 
 Object.extend(Object.basePrototype, {
 	initialize: function() {},
-	superCall: function() {
-		var caller = arguments.callee.caller;
+	superCall: function superCall() {
+		var caller = superCall.caller || arguments.callee.caller;
 		
 		if (caller && caller.methodName) {
 			var methodName = caller.methodName;
@@ -178,8 +186,7 @@ Object.extend(Object.basePrototype, {
 	}
 });
 
-if (Object.create)
-	Trait = Object.inherit({});
+var Trait = Object.inherit({});
 
 function classOf(object) {
 	return Object.getPrototypeOf(Object(object)).constructor;

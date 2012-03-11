@@ -117,13 +117,5 @@
 	
 	Trait = Object.inherit({});
 	
-	if (![].__proto__) {
-		var inherit = Function.prototype.inherit;
-		Function.prototype.inherit = function() {
-			var cls = inherit.apply(this, arguments);
-			cls.wrappedPrototype = cls.prototype;
-			cls.prototype = Object.create(cls.prototype);
-			return cls;
-		};
-	}
+	
 })();

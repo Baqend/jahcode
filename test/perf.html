@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Performance Test</title>
+</head>
+<script type="text/javascript" src="../class.js"></script>
+<script type="text/javascript" src="../fallback.js"></script>
+<script type="text/javascript">
+var start = new Date().getTime();
+</script>
+<script type="text/javascript" src="model.js"></script>
+<script type="text/javascript">
+"use strict";
+console.log('init: ' + (new Date().getTime() - start));
+
+var objs = new Array(100000);
+start = new Date().getTime();
+for (var i = 0; i < 100000; ++i) {
+    objs[i] = new ClassB();
+}
+
+console.log('create: ' + (new Date().getTime() - start));
+
+start = new Date().getTime();
+for (var i = 0; i < 100000; ++i) {
+    objs[i].a();
+}
+
+console.log('a: ' + (new Date().getTime() - start));
+
+start = new Date().getTime();
+for (var i = 0; i < 100000; ++i) {
+    objs[i].b();
+}
+
+console.log('b: ' + (new Date().getTime() - start));
+
+start = new Date().getTime();
+var sum = 0;
+for (var i = 0; i < 100000; ++i) {
+	objs[i].c();
+}
+
+console.log('c: ' + sum + ' ' + (new Date().getTime() - start));
+
+start = new Date().getTime();
+var sum2 = 0;
+for (var i = 0; i < 100000; ++i) {
+	objs[i].d();
+}
+
+console.log('d: ' + sum2 + ' ' + (new Date().getTime() - start));
+
+start = new Date().getTime();
+var sum2 = 0;
+for (var i = 0; i < 100000; ++i) {
+	objs[i].e();
+}
+
+console.log('e: ' + sum2 + ' ' + (new Date().getTime() - start));
+
+start = new Date().getTime();
+var sum2 = 0;
+for (var i = 0; i < 100000; ++i) {
+	objs[i].f();
+}
+
+console.log('f: ' + sum2 + ' ' + (new Date().getTime() - start));
+
+start = new Date().getTime();
+var result = true;
+for (var i = 0; i < 100000; ++i) {
+    result &= TraitA(objs[i]) != null; 
+}
+
+console.log('isA: ' + result + ' ' + (new Date().getTime() - start));
+</script>
+<body>
+
+</body>
+</html>
