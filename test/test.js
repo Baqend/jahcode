@@ -1,73 +1,211 @@
-function assertPrototypeChain(expected, actual) {
-	var proto = actual;
-	for (var i = expected.length - 1, cls; cls = expected[i]; --i) {
-		proto = Object.getPrototypeOf(proto);
-		assertSame(cls, proto.constructor);
-	}
-}
-
-function assertIsInstanceOf(expected, actual) {
-	expected.isInstanceOf(Array)? expected: [expected];
-	
-	for (var i = 0, cls; cls = expected[i]; ++i) {
-		assertTrue(actual.isInstanceOf(cls));
-	}
-}
-
-function assertNotIsInstanceOf(expected, actual) {
-	expected.isInstanceOf(Array)? expected: [expected];
-	
-	for (var i = 0, cls; cls = expected[i]; ++i) {
-		assertFalse(actual.isInstanceOf(cls));
-	}
-}
-
-function assertAsInstanceOf(expected, actual) {
-	expected.isInstanceOf(Array)? expected: [expected];
-	
-	for (var i = 0, cls; cls = expected[i]; ++i) {
-		assertNoException(function() {
-			actual.asInstanceOf(cls);
-		});
-	}
-}
-
-function assertNotAsInstanceOf(expected, actual) {
-	expected.isInstanceOf(Array)? expected: [expected];
-	
-	for (var i = 0, cls; cls = expected[i]; ++i) {
-		assertException(function() {
-			actual.asInstanceOf(cls);
-		});
-	}
-}
-
-function assertClassCast(expected, actual) {
-	expected.isInstanceOf(Array)? expected: [expected];
-	
-	for (var i = 0, cls; cls = expected[i]; ++i) {
-		assertSame(cls(actual), actual);
-	}
-}
-
-function assertNotClassCast(expected, actual) {
-	expected.isInstanceOf(Array)? expected: [expected];
-	
-	for (var i = 0, cls; cls = expected[i]; ++i) {
-		assertNull(cls(actual));
-	}
-}
 
 TestCase("TestIneritance", {
-	tearDown: function() {
+	testConstructors : function() {
+		var myClass = Object.inherit({
+			initialize: function(a, b, c) {
+				assertSame(1, a);
+				assertSame(2, b);
+				assertSame(3, c);
+			}
+		});
 		
+		new myClass(1, 2, 3);
+		
+		var myExtClass = myClass.inherit({
+			initialize: function(a, b, c, d, e) {
+				this.superCall(a, b, c);
+				assertSame(4, d);
+				assertSame(5, e);
+			}
+		});
+		
+		new myExtClass(1, 2, 3, 4, 5);
 	},
+	testImplicitConstructors: function() {
+		expectAsserts(6);
+		
+		var myClass = Object.inherit({
+			initialize: function() {
+				assertTrue(true);
+			}
+		});
+		
+		var myExtClass = myClass.inherit({
+			// no explicit super call
+		});
+		
+		new myExtClass();
+		
+		var myExtClass = myClass.inherit({
+			initialize: function() {
+				assertTrue(true);
+			}
+		});
+		
+		new myExtClass();
+		
+		var myExtExtClass = myExtClass.inherit({
+			initialize: function() {
+				this.superCall();
+				
+				assertTrue(true);
+			}
+		});
+		
+		new myExtExtClass();
+	},
+	testStaticMembers: function() {
+		var myClass = Object.inherit({
+			extend: {
+				create: function() {
+					return new this(1, 2, 3);
+				},
+				getInstance: function() {
+					return this.create();
+				}
+			},
+			initialize: function(a, b, c) {
+				assertSame(1, a);
+				assertSame(2, b);
+				assertSame(3, c);
+			}
+		});
+		
+		assertIsInstanceOf(myClass, myClass.create());
+		assertIsInstanceOf(myClass, myClass.getInstance());
+	},
+	testTraits: function() {
+		var myTrait = Trait.inherit({
+			initialize: function() {
+				this.field = true;
+			},
+			fieldValue: function() {
+				return this.field;
+			}
+		});
+		
+		var myExtTrait = myTrait.inherit({
+			initialize: function() {
+				this.extField = true;
+			},
+			extFieldValue: function() {
+				return this.field && this.extField;
+			}
+		});
+		
+		var t = new myTrait();
+		
+		assertInstanceOf(Trait, t);
+		assertInstanceOf(myTrait, t);
+		assertIsInstanceOf(myTrait, t);
+		assertAsInstanceOf(myTrait, t);
+		
+		assertTrue(t.field);
+		assertTrue(t.fieldValue());
+		
+		var t = new myExtTrait();
+		
+		assertInstanceOf(Trait, t);
+		assertInstanceOf(myTrait, t);
+		assertIsInstanceOf(myTrait, t);
+		assertAsInstanceOf(myTrait, t);
+		assertInstanceOf(myExtTrait, t);
+		assertIsInstanceOf(myExtTrait, t);
+		assertAsInstanceOf(myExtTrait, t);
+		
+		assertTrue(t.field);
+		assertTrue(t.extField);
+		assertTrue(t.fieldValue());
+		assertTrue(t.extFieldValue());
+	},
+	testMixinedTrait: function() {
+		var myTrait = Trait.inherit({
+			initialize: function() {
+				this.field = true;
+			},
+			fieldValue: function() {
+				return this.field;
+			}
+		});
+		
+		jstestdriver.console.log(Object.getOwnPropertyDescriptor)
+		
+		var myExtTrait = Trait.inherit(myTrait, {
+			initialize: function() {
+				this.extField = true;
+			},
+			extFieldValue: function() {
+				return this.field && this.extField;
+			}
+		});
+		
+
+		
+		var t = new myExtTrait();
+		
+		assertIsInstanceOf(myTrait, t);
+		assertAsInstanceOf(myTrait, t);
+		assertInstanceOf(myExtTrait, t);
+		assertIsInstanceOf(myExtTrait, t);
+		assertAsInstanceOf(myExtTrait, t);
+		
+		assertTrue(t.field);
+		assertTrue(t.extField);
+		assertTrue(t.fieldValue());
+		assertTrue(t.extFieldValue());
+	},
+	testNativeTypes: function() {
+		assertAsInstanceOf(Boolean, true);
+		assertAsInstanceOf(Boolean, false);
+		assertAsInstanceOf(Boolean, Boolean(true));
+		assertAsInstanceOf(Number, 0);
+		assertAsInstanceOf(Number, 1);
+		assertAsInstanceOf(Number, 17.43);
+		assertAsInstanceOf(Number, Number(1));
+		assertAsInstanceOf(String, "");
+		assertAsInstanceOf(String, "a");
+		assertAsInstanceOf(String, String("a"));
+		assertAsInstanceOf(RegExp, /foo/);
+		assertAsInstanceOf(RegExp, new RegExp("asdf"));
+		assertAsInstanceOf(Array, []);
+		assertAsInstanceOf(Array, [1]);
+		assertAsInstanceOf(Date, new Date());
+		assertAsInstanceOf(Function, new Function("return;"));
+		assertAsInstanceOf(Function, function(){});
+		assertAsInstanceOf(Error, new Error());
+		assertAsInstanceOf([Error, TypeError], new TypeError());
+	},
+	testNativeClassOf: function() {
+		assertSame(Boolean, classOf(true));
+		assertSame(Boolean, classOf(false));
+		assertSame(Boolean, classOf(Boolean(true)));
+		assertSame(Number, classOf(0));
+		assertSame(Number, classOf(1));
+		assertSame(Number, classOf(17.43));
+		assertSame(Number, classOf(Number(1)));
+		assertSame(String, classOf(""));
+		assertSame(String, classOf("a"));
+		assertSame(String, classOf(String("a")));
+		assertSame(RegExp, classOf(/foo/));
+		assertSame(RegExp, classOf(new RegExp("asdf")));
+		assertSame(Array, classOf([]));
+		assertSame(Array, classOf([1]));
+		assertSame(Date, classOf(new Date()));
+		assertSame(Function, classOf(new Function("return;")));
+		assertSame(Function, classOf(function(){}));
+		assertSame(Error, classOf(new Error()));
+		assertSame(TypeError, classOf(new TypeError()));
+	}
+});
+
+TestCase("TestModel", {
 	testAvailability : function() {
-		assertNotUndefined(TraitB);
-		assertNotUndefined(TraitC);
-		assertNotUndefined(TraitD);
-		assertNotUndefined(ClassA);
-		assertNotUndefined(ClassB);
+		assertNotUndefined('TraitA is unavailable', TraitA);
+		assertNotUndefined('TraitB is unavailable', TraitB);
+		assertNotUndefined('TraitC is unavailable', TraitC);
+		assertNotUndefined('TraitD is unavailable', TraitD);
+		assertNotUndefined('ClassA is unavailable', ClassA);
+		assertNotUndefined('ClassB is unavailable', ClassB);
 	},
 	testTraitA : function() {
 		var types = [Object, Trait, TraitA];
@@ -254,121 +392,8 @@ TestCase("TestIneritance", {
 		assertNotClassCast(otherTypes, t);
 		
 		assertSame(ClassB, classOf(t));
-	},
-	testConstructors : function() {
-		var myClass = Object.inherit({
-			initialize: function(a, b, c) {
-				assertSame(1, a);
-				assertSame(2, b);
-				assertSame(3, c);
-			}
-		});
 		
-		new myClass(1, 2, 3);
-		
-		var myExtClass = myClass.inherit({
-			initialize: function(a, b, c, d, e) {
-				this.superCall(a, b, c);
-				assertSame(4, d);
-				assertSame(5, e);
-			}
-		});
-		
-		new myExtClass(1, 2, 3, 4, 5);
-	},
-	testImplicitConstructors: function() {
-		expectAsserts(6);
-		
-		var myClass = Object.inherit({
-			initialize: function() {
-				assertTrue(true);
-			}
-		});
-		
-		var myExtClass = myClass.inherit({
-			// no explicit super call
-		});
-		
-		new myExtClass();
-		
-		var myExtClass = myClass.inherit({
-			initialize: function() {
-				assertTrue(true);
-			}
-		});
-		
-		new myExtClass();
-		
-		var myExtExtClass = myExtClass.inherit({
-			initialize: function() {
-				this.superCall();
-				
-				assertTrue(true);
-			}
-		});
-		
-		new myExtExtClass();
-	},
-	testStaticMembers: function() {
-		var myClass = Object.inherit({
-			extend: {
-				create: function() {
-					return new this(1, 2, 3);
-				},
-				getInstance: function() {
-					return this.create();
-				}
-			},
-			initialize: function(a, b, c) {
-				assertSame(1, a);
-				assertSame(2, b);
-				assertSame(3, c);
-			}
-		});
-		
-		assertIsInstanceOf(myClass, myClass.create());
-		assertIsInstanceOf(myClass, myClass.getInstance());
-	},
-	testNativeTypes: function() {
-		assertAsInstanceOf(Boolean, true);
-		assertAsInstanceOf(Boolean, false);
-		assertAsInstanceOf(Boolean, Boolean(true));
-		assertAsInstanceOf(Number, 0);
-		assertAsInstanceOf(Number, 1);
-		assertAsInstanceOf(Number, 17.43);
-		assertAsInstanceOf(Number, Number(1));
-		assertAsInstanceOf(String, "");
-		assertAsInstanceOf(String, "a");
-		assertAsInstanceOf(String, String("a"));
-		assertAsInstanceOf(RegExp, /foo/);
-		assertAsInstanceOf(RegExp, new RegExp("asdf"));
-		assertAsInstanceOf(Array, []);
-		assertAsInstanceOf(Array, [1]);
-		assertAsInstanceOf(Date, new Date());
-		assertAsInstanceOf(Function, new Function("return;"));
-		assertAsInstanceOf(Function, function(){});
-		assertAsInstanceOf(Error, new Error());
-		assertAsInstanceOf([Error, TypeError], new TypeError());
-	},
-	testNativeClassOf: function() {
-		assertSame(Boolean, classOf(true));
-		assertSame(Boolean, classOf(false));
-		assertSame(Boolean, classOf(Boolean(true)));
-		assertSame(Number, classOf(0));
-		assertSame(Number, classOf(1));
-		assertSame(Number, classOf(17.43));
-		assertSame(Number, classOf(Number(1)));
-		assertSame(String, classOf(""));
-		assertSame(String, classOf("a"));
-		assertSame(String, classOf(String("a")));
-		assertSame(RegExp, classOf(/foo/));
-		assertSame(RegExp, classOf(new RegExp("asdf")));
-		assertSame(Array, classOf([]));
-		assertSame(Array, classOf([1]));
-		assertSame(Date, classOf(new Date()));
-		assertSame(Function, classOf(new Function("return;")));
-		assertSame(Function, classOf(function(){}));
-		assertSame(Error, classOf(new Error()));
-		assertSame(TypeError, classOf(new TypeError()));
+		assertInstanceOf(ClassA, t);
+		assertInstanceOf(ClassB, t);
 	}
 });

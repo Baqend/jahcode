@@ -217,7 +217,7 @@ Another new feature what was introduced with ECMA 5 was the possibility to decla
 You can used them already in the class body definition of any class and they work as same to the standard
 
 Note: this feature works only in ECMA 5 based browsers, if you want to support older browser just don't use this feature.
-The other parts of this framework works also in older browser if you import the fallback.js 
+The other parts of this framework works also in older browser if you import the shims from lib/es5-shim.min.js
 
     var GetterSetterClass = Object.inherit(SimpleTrait, {
         text: {
