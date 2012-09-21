@@ -7,7 +7,7 @@
  */
 var Trait;
 
-(function() {
+(function(global) {
 	var fakePrototype = Object.getPrototypeOf({constructor: String}) == String.prototype;
 	
 	if (!Function.prototype.extend) {	
@@ -30,42 +30,51 @@ var Trait;
 		linearizedTypes: [Object],
 		inherit: function() {
 			var klass = function(toCast) {
-				if (!(this instanceof klass)) return toCast && toCast.isInstanceOf(klass)? toCast: null;
+				if (!(this instanceof klass)) return toCast && toCast.isInstanceOf(klass)? toCast: klass.conv(toCast);
 				this.initialize.apply(this, arguments);
 			};
 			
 			var objectDescriptor = arguments[arguments.length - 1];
 			var proto = Object.createPrototypeChain(klass, this, Array.prototype.slice.call(arguments, 0, arguments.length - 1));
 			
-			for (var name in objectDescriptor) {
-				if (objectDescriptor.hasOwnProperty(name)) {
-					var result = false;
-					if (Object.properties.hasOwnProperty(name)) {
-						result = Object.properties[name](proto, objectDescriptor, name);
-					} 
-					
-					var d = objectDescriptor[name];
-					if (!result) {											
-						if (!d || !(d.hasOwnProperty('get') || d.hasOwnProperty('set'))) {				
-							proto[name] = d;
-						} else {
-							Object.defineProperty(proto, name, d);
-						}
+			var names = Object.getOwnPropertyNames(objectDescriptor);
+			for (var i = 0; i < names.length; ++i) {
+				var name = names[i];
+				var result = false;
+				if (Object.properties.hasOwnProperty(name)) {
+					result = Object.properties[name](proto, objectDescriptor, name);
+				} 
+				
+				var d = objectDescriptor[name];
+				if (!result) {											
+					if (!d || !(d.hasOwnProperty('get') || d.hasOwnProperty('set'))) {				
+						proto[name] = d;
+					} else {
+						Object.defineProperty(proto, name, d);
 					}
-					
-					if (d instanceof Function) {
-						d.methodName = name;
-					}
+				}
+				
+				if (d instanceof Function) {
+					d.methodName = name;
 				}
 			}
 			
+			if (klass.initialize)
+				klass.initialize();
+			
 			return klass;
+		},
+		conv: function(object) {
+			return null;
 		}
 	});
 	
 	Object.extend({
 		properties: {},
-		basePrototype: {},
+		baseDescriptors: {},
+		initialize: function() {
+			Object.defineProperties(Object.prototype, Object.baseDescriptors);
+		},
 		cloneOwnProperties: function(target, src) {
 			var names = Object.getOwnPropertyNames(src);
 			for (var i = 0; i < names.length; ++i) {
@@ -83,7 +92,7 @@ var Trait;
 			
 			if (!cls.basePrototype) {
 				cls.basePrototype = Object.create(cls.prototype);
-				Object.extend(cls.basePrototype, Object.basePrototype);
+				Object.defineProperties(cls.basePrototype, Object.baseDescriptors);
 				
 				if (!cls.prototype.initialize) {
 					cls.basePrototype.initialize = function() {
@@ -157,67 +166,85 @@ var Trait;
 		}
 	});
 	
-	Object.extend(Object.basePrototype, {
-		initialize: function() {},
-		superCall: function superCall() {
-			var caller = superCall.caller || arguments.callee.caller;
-			
-			if (caller && caller.methodName) {
-				var methodName = caller.methodName;
+	Object.extend(Object.baseDescriptors, {
+		initialize: {
+			value: function() {},
+			writable: true
+		},
+		superCall: {
+			value: function superCall() {
+				var caller = superCall.caller || arguments.callee.caller;
 				
-				var proto = this;
-				while (!proto.hasOwnProperty(methodName) || proto[methodName] !== caller) {
+				if (caller && caller.methodName) {
+					var methodName = caller.methodName;
+					
+					var proto = this;
+					while (!proto.hasOwnProperty(methodName) || proto[methodName] !== caller) {
+						proto = Object.getPrototypeOf(proto);
+		
+						if (proto == Object.prototype)
+							throw new ReferenceError("superCall can't determine any super method");
+					}
 					proto = Object.getPrototypeOf(proto);
-	
-					if (proto == Object.prototype)
-						throw new ReferenceError("superCall can't determine any super method");
+					
+					return proto[caller.methodName].apply(this, arguments);
+				} else {		
+					throw new ReferenceError("superCall can not be called outside of object inheritance");
 				}
-				proto = Object.getPrototypeOf(proto);
-				
-				return proto[caller.methodName].apply(this, arguments);
-			} else {		
-				throw new ReferenceError("superCall can not be called outside of object inheritance");
-			}
+			},
+			enumerable: false
 		},
-		isInstanceOf: function(klass) {
-			return this instanceof klass || classOf(this).linearizedTypes.lastIndexOf(klass) != -1;
+		isInstanceOf: {
+			value: function(klass) {
+				return this instanceof klass || classOf(this).linearizedTypes.lastIndexOf(klass) != -1;
+			},
+			enumarable: false
 		},
-		asInstanceOf: function(klass) {
-			if (this.isInstanceOf(klass)) {
-				return this;
-			} else {
-				throw new TypeError();
-			}
+		asInstanceOf: {
+			value: function(klass) {
+				if (this.isInstanceOf(klass)) {
+					return this;
+				} else {
+					throw new TypeError();
+				}
+			},
+			enumerable: false
 		}
 	});
 	
-	Trait = Object.inherit({});
+	Object.extend(global, {
+		Trait: Object.inherit({}),
+		classOf: function(object) {
+			return Object.getPrototypeOf(Object(object)).constructor;
+		}
+	});
 	
-	function classOf(object) {
-		return Object.getPrototypeOf(Object(object)).constructor;
-	}
-	
-	for (var i = 0, cls; cls = [Boolean, Number, String, Array, Function, Date, RegExp, Error][i]; ++i) {
+	var nativeClasses = [Boolean, Number, String, Array, Function, Date, RegExp, Error];
+	for (var i = 0, cls; cls = nativeClasses[i]; ++i) {
 		Object.extend(cls.prototype, {
 			isInstanceOf: function(klass) {
 				return this instanceof klass;
 			},
 			asInstanceOf: Object.basePrototype.asInstanceOf
 		});
+		
+		cls.conv = cls;
 	}
 	
-	Object.extend(Array.prototype, {
-		initialize: function() {
-			for (var i = 0; i < arguments.length; ++i)
-				this[i] = arguments[i];
-			
-			this.length = arguments.length;
-		}
-	});
+	Date.conv = function(object) {
+		return new Date(object);
+	};
 	
-	Object.extend(Error.prototype, {
+	Array.prototype.initialize = function() {
+		for (var i = 0; i < arguments.length; ++i)
+			this[i] = arguments[i];
+		
+		this.length = arguments.length;
+	};
+	
+	Error.prototype.initialize = {
 		initialize: function(message) {
 			this.message = message;
 		}
-	});
-})();
+	};
+})(window || global);
