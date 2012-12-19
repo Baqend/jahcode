@@ -1,4 +1,6 @@
 function assertPrototypeChain(expected, actual) {
+	expected = expected.isInstanceOf(Array)? expected: [expected];
+	
 	var proto = actual;
 	for (var i = expected.length - 1, cls; cls = expected[i]; --i) {
 		do {
@@ -10,7 +12,7 @@ function assertPrototypeChain(expected, actual) {
 }
 
 function assertIsInstanceOf(expected, actual) {
-	expected.isInstanceOf(Array)? expected: [expected];
+	expected = expected.isInstanceOf(Array)? expected: [expected];
 	
 	for (var i = 0, cls; cls = expected[i]; ++i) {
 		assertTrue(actual.isInstanceOf(cls));
@@ -18,7 +20,7 @@ function assertIsInstanceOf(expected, actual) {
 }
 
 function assertNotIsInstanceOf(expected, actual) {
-	expected.isInstanceOf(Array)? expected: [expected];
+	expected = expected.isInstanceOf(Array)? expected: [expected];
 	
 	for (var i = 0, cls; cls = expected[i]; ++i) {
 		assertFalse(actual.isInstanceOf(cls));
@@ -26,7 +28,7 @@ function assertNotIsInstanceOf(expected, actual) {
 }
 
 function assertAsInstanceOf(expected, actual) {
-	expected.isInstanceOf(Array)? expected: [expected];
+	expected = expected.isInstanceOf(Array)? expected: [expected];
 	
 	for (var i = 0, cls; cls = expected[i]; ++i) {
 		assertNoException(function() {
@@ -36,7 +38,7 @@ function assertAsInstanceOf(expected, actual) {
 }
 
 function assertNotAsInstanceOf(expected, actual) {
-	expected.isInstanceOf(Array)? expected: [expected];
+	expected = expected.isInstanceOf(Array)? expected: [expected];
 	
 	for (var i = 0, cls; cls = expected[i]; ++i) {
 		assertException(function() {
@@ -46,7 +48,7 @@ function assertNotAsInstanceOf(expected, actual) {
 }
 
 function assertClassCast(expected, actual) {
-	expected.isInstanceOf(Array)? expected: [expected];
+	expected = expected.isInstanceOf(Array)? expected: [expected];
 	
 	for (var i = 0, cls; cls = expected[i]; ++i) {
 		assertSame(cls(actual), actual);
@@ -54,7 +56,7 @@ function assertClassCast(expected, actual) {
 }
 
 function assertNotClassCast(expected, actual) {
-	expected.isInstanceOf(Array)? expected: [expected];
+	expected = expected.isInstanceOf(Array)? expected: [expected];
 	
 	for (var i = 0, cls; cls = expected[i]; ++i) {
 		assertNull(cls(actual));

@@ -1,12 +1,10 @@
 /*!
- * Class Declaration Framework v0.9.1
+ * Class Declaration Framework v0.9.3
  * https://github.com/fbuecklers/js-class
  *
  * Copyright 2012, Florian Buecklers
  * Licensed under the MIT license.  
  */
-var Trait;
-
 (function(global) {
 	var fakePrototype = Object.getPrototypeOf({constructor: String}) == String.prototype;
 	
@@ -30,7 +28,7 @@ var Trait;
 		linearizedTypes: [Object],
 		inherit: function() {
 			var klass = function(toCast) {
-				if (!(this instanceof klass)) return toCast && toCast.isInstanceOf(klass)? toCast: klass.conv(toCast);
+				if (!(this instanceof klass)) return toCast && toCast.isInstanceOf && toCast.isInstanceOf(klass)? toCast: klass.conv(toCast);
 				this.initialize.apply(this, arguments);
 			};
 			
@@ -167,10 +165,6 @@ var Trait;
 	});
 	
 	Object.extend(Object.baseDescriptors, {
-		initialize: {
-			value: function() {},
-			writable: true
-		},
 		superCall: {
 			value: function superCall() {
 				var caller = superCall.caller || arguments.callee.caller;
@@ -212,12 +206,76 @@ var Trait;
 		}
 	});
 	
-	Object.extend(global, {
-		Trait: Object.inherit({}),
-		classOf: function(object) {
-			return Object.getPrototypeOf(Object(object)).constructor;
+	var classOf = function(object) {
+		return Object.getPrototypeOf(Object(object)).constructor;
+	};
+	
+	var Trait = Object.inherit({});
+	var Bind = Trait.inherit({
+		extend: {
+			Object: Object.inherit({
+				initialize: function(self) {
+					this.self = self;
+				}
+			}),
+			create: function(obj) {
+				if (!obj.constructor.Bind) {
+					var descr = {};
+					Bind.each(obj, function(name, method) {
+						descr[name] = {
+							get: function() {
+								return this[name] = method.bind(this.self);
+							},
+							set: function(val) {
+								Object.defineProperty(this, name, {
+									value: val
+								});
+							},
+							configurable: true
+						};
+					});
+					
+					obj.constructor.Bind = Bind.Object.inherit(descr);
+				}
+				
+				return new obj.constructor.Bind(obj);
+			},
+			each: function(obj, callback) {
+				var proto = Object.getPrototypeOf(obj);
+				
+				for (var name in proto) {
+					var method = proto[name];
+					if (name != 'initialize' && method instanceof Function) {
+						callback(name, method);
+					}
+				}
+			}
+		},
+		
+		initialize: function() {
+			if (!('bind' in this)) {
+				var bind = this.bind = new Bind.Object(this);
+				
+				Bind.each(this, function(name, method) {
+					bind[name] = method.bind(bind.self);
+				});
+			}
 		}
 	});
+
+	try {	
+		Object.defineProperty(Bind.prototype, 'bind', {
+			get: function() {
+				return this.bind = Bind.create(this);
+			},
+			set: function(val) {
+				Object.defineProperty(this, 'bind', {
+					value: val
+				});
+			},
+			configurable: true
+		});
+	} catch (e) {}
 	
 	var nativeClasses = [Boolean, Number, String, Array, Function, Date, RegExp, Error];
 	for (var i = 0, cls; cls = nativeClasses[i]; ++i) {
@@ -242,9 +300,13 @@ var Trait;
 		this.length = arguments.length;
 	};
 	
-	Error.prototype.initialize = {
-		initialize: function(message) {
-			this.message = message;
-		}
+	Error.prototype.initialize = function(message) {
+		this.message = message;
 	};
-})(window || global);
+	
+	Object.extend(global, {
+		classOf: classOf,
+		Trait: Trait,
+		Bind: Bind
+	});
+})(typeof window != 'undefined'? window: global);

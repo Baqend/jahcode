@@ -1,0 +1,26 @@
+{
+    "name": "js-class",
+    "version": "0.9.3",
+    "description": "A tiny class libary based on native JS concepts",
+    "homepage": "http://github.com/fbuecklers/js-class/",
+    "contributors": [
+        "Florian Buecklers <fbuecklers@googlemail.com> (http://github.com/fbuecklers/)"
+    ],
+    "bugs": {
+        "web": "http://github.com/fbuecklers/js-class/issues"
+    },
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "http://github.com/fbuecklers/js-class/raw/master/MIT-LICENSE.txt"
+        }
+    ],
+    "main": "class.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/fbuecklers/js-class.git"
+    },
+    "engines": {
+        "node": ">=0.2.0"
+    }
+}

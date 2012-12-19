@@ -80,6 +80,9 @@ The extend property is a special property which can be optionally set in the cla
 
     var StaticMembersClass = SimpleClass.inherit({
         extend: {
+            initialize: function() { 
+                // this static constructor is called on definition time
+            },
             create: function() {
                 return new this(); //this refers here to the class object itself
             }
@@ -235,23 +238,32 @@ The other parts of this framework works also in older browser if you import the 
     var myClass = new GetterSetterClass();
     myClass.text = 'Hello World!'; // alert 'Hello World!'
 
-EventHandler Trait
+Bind Trait
 ------------------
 
-My first custom Trait, improves the way to declare event handlers. As you know Objects in JavaScript are first class objects
-so methods lose they scope if you bind them as event handler. In most cases we don't want to lose the reference to the origin 
-object who owns our event handler. So if you import the EventHandler.js you can declare your event handlers on a more common way.
+This Trait, improves the way handling method references which is a common use case when using them as event handlers.
+As you know Objects in JavaScript are first class objects
+so methods lose they scope if you bind them i.e. as event handler. In most cases we don't want to lose the reference to the origin 
+object who owns our event handler. So if you import the Bind trait you can bind any method of the object on the fly.
+To do that the Bind trait declares a single field named "bind". This field keeps an object which reflects all methods 
+declared by that class or any parent class. But the returned method references are bind to the object context when they are first used.
 
-    var MyEventHandler = SimpleClass.inherit(EventHandler, { //just mixin the EventHandler trait and al your event handlers don't lose there scopes
-        on: { //declare your event handlers here
-            click: function() {
-                //this refers here to the MyEventHandler instance
-                this.saySomething();
-            }
-        },
+Note that the bind object and each method references are created when they are first used and not at instantiation time
+
+    var MyEventHandler = SimpleClass.inherit(Bind, { //just mixin the Bind trait and methods can be bind
         initialize: {
-            for (name in this.on) //register all event handlers on the window object
-                window.addEventListener(name, this.on[name]);
+            //bind the click method to this context on the fly and keep the reference
+            //so multiple access to the same field will always return the same reference
+            window.addEventListener("click", this.bind.click);
+        },
+        click: function() {
+            //this refers here to the MyEventHandler instance
+            this.saySomething();
+            this.done();
+        },
+        done: function() {
+            //we can use the same reference to unregister the event handler
+            window.removeEventListener("click", this.bind.click);
         }
     });
     

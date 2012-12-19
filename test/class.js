@@ -139,8 +139,6 @@ TestCase("TestIneritance", {
 			}
 		});
 		
-
-		
 		var t = new myExtTrait();
 		
 		assertIsInstanceOf(myTrait, t);
@@ -155,37 +153,46 @@ TestCase("TestIneritance", {
 		assertTrue(t.extFieldValue());
 	},
 	testNativeTypes: function() {
-		assertAsInstanceOf(Boolean, true);
-		assertAsInstanceOf(Boolean, false);
-		assertAsInstanceOf(Boolean, Boolean(true));
-		assertAsInstanceOf(Number, 0);
-		assertAsInstanceOf(Number, 1);
-		assertAsInstanceOf(Number, 17.43);
-		assertAsInstanceOf(Number, Number(1));
-		assertAsInstanceOf(String, "");
-		assertAsInstanceOf(String, "a");
-		assertAsInstanceOf(String, String("a"));
-		assertAsInstanceOf(RegExp, /foo/);
-		assertAsInstanceOf(RegExp, new RegExp("asdf"));
-		assertAsInstanceOf(Array, []);
-		assertAsInstanceOf(Array, [1]);
-		assertAsInstanceOf(Date, new Date());
-		assertAsInstanceOf(Function, new Function("return;"));
-		assertAsInstanceOf(Function, function(){});
-		assertAsInstanceOf(Error, new Error());
-		assertAsInstanceOf([Error, TypeError], new TypeError());
+		assertAsInstanceOf([Object, Boolean], true);
+		assertAsInstanceOf([Object, Boolean], false);
+		assertAsInstanceOf([Object, Boolean], Boolean(true));
+		assertAsInstanceOf([Object, Boolean], new Boolean(false));
+		assertAsInstanceOf([Object, Number], 0);
+		assertAsInstanceOf([Object, Number], 1);
+		assertAsInstanceOf([Object, Number], 17.43);
+		assertAsInstanceOf([Object, Number], Number(1));
+		assertAsInstanceOf([Object, Number], new Number(1));
+		assertAsInstanceOf([Object, String], "");
+		assertAsInstanceOf([Object, String], "a");
+		assertAsInstanceOf([Object, String], String("a"));
+		assertAsInstanceOf([Object, String], new String("a"));
+		assertAsInstanceOf([Object, RegExp], /foo/);
+		assertAsInstanceOf([Object, RegExp], new RegExp("asdf"));
+		assertAsInstanceOf([Object, Array], []);
+		assertAsInstanceOf([Object, Array], [1]);
+		assertAsInstanceOf([Object, Date], new Date());
+		assertAsInstanceOf([Object, Function], new Function("return;"));
+		assertAsInstanceOf([Object, Function], function(){});
+		assertAsInstanceOf([Object, Error], new Error());
+		assertAsInstanceOf([Object, Error, TypeError], new TypeError());
 	},
 	testNativeClassOf: function() {
+		assertSame(Object, classOf({}));
+		assertSame(Object, classOf({test: "test"}));
+		assertSame(Object, classOf(new Object()));
 		assertSame(Boolean, classOf(true));
 		assertSame(Boolean, classOf(false));
 		assertSame(Boolean, classOf(Boolean(true)));
+		assertSame(Boolean, classOf(new Boolean(false)));
 		assertSame(Number, classOf(0));
 		assertSame(Number, classOf(1));
 		assertSame(Number, classOf(17.43));
 		assertSame(Number, classOf(Number(1)));
+		assertSame(Number, classOf(new Number(1)));
 		assertSame(String, classOf(""));
 		assertSame(String, classOf("a"));
 		assertSame(String, classOf(String("a")));
+		assertSame(String, classOf(new String("a")));
 		assertSame(RegExp, classOf(/foo/));
 		assertSame(RegExp, classOf(new RegExp("asdf")));
 		assertSame(Array, classOf([]));
@@ -193,6 +200,7 @@ TestCase("TestIneritance", {
 		assertSame(Date, classOf(new Date()));
 		assertSame(Function, classOf(new Function("return;")));
 		assertSame(Function, classOf(function(){}));
+		assertSame(Function, classOf(Object));
 		assertSame(Error, classOf(new Error()));
 		assertSame(TypeError, classOf(new TypeError()));
 	}
@@ -395,5 +403,177 @@ TestCase("TestModel", {
 		
 		assertInstanceOf(ClassA, t);
 		assertInstanceOf(ClassB, t);
+	}
+});
+
+TestCase("TestBind", {
+	testBinding: function() {
+		var Test = Object.inherit(Bind, {
+			counter: 0,
+			
+			testMethod: function() {
+				this.counter++;
+			}
+		});
+		
+		var test = new Test();
+		assertSame(0, test.counter);
+		
+		test.testMethod();
+		assertSame(1, test.counter);
+		
+		assertNotUndefined(test.bind);
+		assertIsInstanceOf(Function, test.bind.testMethod);
+		
+		test.bind.testMethod();
+		assertSame(2, test.counter);
+		
+		var testMethod = test.bind.testMethod;
+		testMethod();
+		assertSame(3, test.counter);
+	},
+	
+	testBindScope: function() {
+		var Test = Object.inherit(Bind, {
+			counter: 0,
+			
+			testMethod: function() {
+				this.counter++;
+			}
+		});
+
+		var test1 = new Test();
+		var test2 = new Test();
+
+		assertNotSame(test1.bind.testMethod, test2.bind.testMethod)
+		
+		test1.bind.testMethod();
+		assertSame(1, test1.counter);
+		assertSame(0, test2.counter);
+		
+		test2.bind.testMethod();
+		assertSame(1, test1.counter);
+		assertSame(1, test2.counter);
+		
+		var test1Method = test1.bind.testMethod;
+		var test2Method = test2.bind.testMethod;
+		
+		test1Method();
+		test2Method();
+		
+		assertSame(2, test1.counter);
+		assertSame(2, test2.counter);
+	},
+	
+	testBindIneritance: function() {
+		var A = Object.inherit({
+			counterA: 0,
+			
+			a: function() {
+				this.counterA++;
+			},
+			
+			test: function() {
+				this.a();
+			}
+		});
+		
+		var B = A.inherit(Bind, {
+			counterB: 0,
+			
+			b: function() {
+				this.counterB++;
+			},
+			
+			test: function() {
+				this.b();
+				this.superCall();
+			}
+		});
+		
+		var C = B.inherit({
+			counterC: 0,
+			
+			c: function() {
+				this.counterC++;
+			},
+			
+			test: function() {
+				this.c();
+				this.superCall();
+			}
+		});
+		
+		var a = new A();
+		assertUndefined(a.bind);
+		
+		var b = new B();
+		
+		b.bind.a();
+		assertSame(1, b.counterA);
+		assertSame(0, b.counterB);
+		
+		b.bind.b();
+		assertSame(1, b.counterA);
+		assertSame(1, b.counterB);
+		
+		b.bind.test();
+		assertSame(2, b.counterA);
+		assertSame(2, b.counterB);
+		
+		var c = new C();
+		
+		c.bind.a();
+		assertSame(1, c.counterA);
+		assertSame(0, c.counterB);
+		assertSame(0, c.counterC);
+		
+		c.bind.b();
+		assertSame(1, c.counterA);
+		assertSame(1, c.counterB);
+		assertSame(0, c.counterC);
+		
+		c.bind.c();
+		assertSame(1, c.counterA);
+		assertSame(1, c.counterB);
+		assertSame(1, c.counterC);
+		
+		c.bind.test();
+		assertSame(2, c.counterA);
+		assertSame(2, c.counterB);
+		assertSame(2, c.counterC);
+	},
+	
+	testPassingParamater: function() {
+		var Test = Object.inherit(Bind, {
+			value: null,
+			
+			testMethod: function(val1, val2) {
+				this.value = val2;
+				return val1;
+			}
+		});
+
+		var test = new Test();
+		assertNull(test.value);
+		
+		assertSame("abc", test.bind.testMethod("abc", "def"));
+		assertSame("def", test.value);
+	},
+	
+	testBindIdentity: function() {
+		var Test = Object.inherit(Bind, {
+			counter: 0,
+			
+			testMethod: function() {
+				this.counter++;
+			}
+		});
+		
+		var test = new Test();
+		
+		testMethod = test.bind.testMethod;
+		
+		assertSame(test.bind.testMethod, testMethod);
 	}
 });

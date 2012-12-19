@@ -1,47 +1,38 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
 <script type="text/javascript" src="lib/es5-shim.js"></script>
 <script type="text/javascript" src="class.js"></script>
-<script type="text/javascript" src="test/model.js"></script>
-<script type="text/javascript" src="EventHandler.js"></script>
+<script type="text/javascript" src="util.js"></script>
 <script type="text/javascript">
 
-var MyEventHandlerClass = Object.inherit(EventHandler, {
-	_bla: 4,
-	huhu: 'muh',
+var MyEventHandlerClass = Object.inherit(Bind, {
+	bla: 4,
 	
-	initialize: function() {
-		this.huhu = 3;
+	initialize: function(val) {
+		this.bla = val;
 		
-		for (name in this.on) {
-		    if (document.addEventListener) {
-		    	document.addEventListener(name, this.on[name]);
-		    } else {
-		    	document.attachEvent('on' + name, this.on[name]);
-		    }
+		if (document.addEventListener) {			
+			document.addEventListener('click', this.bind.onclick);
+		} else {
+			document.attachEvent('onclick', this.bind.onclick);
 		}
 	},
 	doSomethingOnClick: function() {
         alert(this.bla);
 	},
-	on: {
-        click: function() {
-            this.doSomethingOnClick();
-        },
-        mousemove: function(e) {
-            this.bla = e.x;
-        }
+    onclick: function() {
+        this.doSomethingOnClick();
     }
 });
 
-var el = new MyEventHandlerClass()
+var el = new MyEventHandlerClass(3)
+var el2 = new MyEventHandlerClass(5)
 
 	
 </script>
-<title>Insert title here</title>
+<title>Test Document</title>
 </head>
 <body>
 
