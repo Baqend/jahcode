@@ -575,5 +575,30 @@ TestCase("TestBind", {
 		testMethod = test.bind.testMethod;
 		
 		assertSame(test.bind.testMethod, testMethod);
+	},
+	
+	testBindCreate: function() {
+		var Test = Object.inherit({
+			counter: 0,
+			
+			testMethod: function() {
+				this.counter++;
+			}
+		});
+		
+		var test1 = new Test();
+		var test2 = new Test();
+		
+		var b1 = Bind.create(test1);
+		var b2 = Bind.create(test2);
+		
+		b1.testMethod();
+		assertSame(1, test1.counter);
+		assertSame(0, test2.counter);
+
+		b2.testMethod();
+		b2.testMethod();
+		assertSame(1, test1.counter);
+		assertSame(2, test2.counter);
 	}
 });

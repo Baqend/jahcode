@@ -269,4 +269,19 @@ Note that the bind object and each method references are created when they are f
     
     var myHandler = new MyEventHandler();
     
+If you want to create your own Bind object instance, you can use the Bind.create(obj) method. This method
+creates a new bounded object which holds all the methods defined on the given obj argument. The methods on
+the returned bounded object are bound to the origin object. This method is really useful if you don't define 
+the actual Class and therefore Bind can't be mixed in or the bind field is used for something else.
 
+    var MyEventHandler = Object.inherit({
+        click: function() {
+            //this refers here to the MyEventHandler instance
+            this.clicked = true;
+        }
+    });
+    
+    var myHandler = new MyEventHandler();
+    myBoundedHandler = Bind.create(this);
+    
+    window.addEventListener("click", myBoundedHandler.click);

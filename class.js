@@ -1,5 +1,5 @@
 /*!
- * Class Declaration Framework v0.9.3
+ * Class Declaration Framework v0.9.4
  * https://github.com/fbuecklers/js-class
  *
  * Copyright 2012, Florian Buecklers
@@ -213,29 +213,27 @@
 	var Trait = Object.inherit({});
 	var Bind = Trait.inherit({
 		extend: {
-			Object: Object.inherit({
-				initialize: function(self) {
-					this.self = self;
-				}
-			}),
 			create: function(obj) {
 				if (!obj.constructor.Bind) {
-					var descr = {};
-					Bind.each(obj, function(name, method) {
-						descr[name] = {
-							get: function() {
-								return this[name] = method.bind(this.self);
-							},
-							set: function(val) {
-								Object.defineProperty(this, name, {
-									value: val
-								});
-							},
-							configurable: true
-						};
-					});
-					
-					obj.constructor.Bind = Bind.Object.inherit(descr);
+					try {						
+						var descr = {};
+						Bind.each(obj, function(name, method) {
+							descr[name] = {
+								get: function() {
+									return this[name] = method.bind(this.self);
+								},
+								set: function(val) {
+									Object.defineProperty(this, name, {
+										value: val
+									});
+								},
+								configurable: true
+							};
+						});
+						obj.constructor.Bind = Bind.Object.inherit(descr);
+					} catch (e) {
+						obj.constructor.Bind = Bind.Object.inherit({});
+					}
 				}
 				
 				return new obj.constructor.Bind(obj);
@@ -254,11 +252,7 @@
 		
 		initialize: function() {
 			if (!('bind' in this)) {
-				var bind = this.bind = new Bind.Object(this);
-				
-				Bind.each(this, function(name, method) {
-					bind[name] = method.bind(bind.self);
-				});
+				this.bind = Bind.create(this);
 			}
 		}
 	});
@@ -275,7 +269,24 @@
 			},
 			configurable: true
 		});
-	} catch (e) {}
+		
+		Bind.Object = Object.inherit({
+			initialize: function(self) {
+				this.self = self;
+			}
+		});
+	} catch (e) {
+		Bind.Object = Object.inherit({
+			initialize: function(self) {
+				this.self = self;
+				
+				var bind = this;
+				Bind.each(self, function(name, method) {
+					bind[name] = method.bind(bind.self);
+				});
+			}
+		});
+	}
 	
 	var nativeClasses = [Boolean, Number, String, Array, Function, Date, RegExp, Error];
 	for (var i = 0, cls; cls = nativeClasses[i]; ++i) {
