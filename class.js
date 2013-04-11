@@ -2,7 +2,7 @@
  * Class Declaration Framework v0.9.4
  * https://github.com/fbuecklers/js-class
  *
- * Copyright 2012, Florian Buecklers
+ * Copyright 2011-2013, Florian Buecklers
  * Licensed under the MIT license.  
  */
 (function(global) {
@@ -29,7 +29,7 @@
 		inherit: function() {
 			var klass = function(toCast) {
 				if (!(this instanceof klass)) return toCast && toCast.isInstanceOf && toCast.isInstanceOf(klass)? toCast: klass.conv(toCast);
-				this.initialize.apply(this, arguments);
+				arguments.length? this.initialize.apply(this, arguments): this.initialize.call(this);
 			};
 			
 			var objectDescriptor = arguments[arguments.length - 1];
@@ -94,7 +94,7 @@
 				
 				if (!cls.prototype.initialize) {
 					cls.basePrototype.initialize = function() {
-						cls.apply(this, arguments);
+						arguments.length? cls.apply(this, arguments): cls.call(this);
 					};
 				}
 			}
@@ -148,13 +148,13 @@
 					throw new TypeError('trait constructors can not call super constructors directly');
 				
 				objectDescriptor.initialize = function() {
-					this.superCall.apply(this, arguments);
+					arguments.length? this.superCall.apply(this, arguments): this.superCall.call(this);
 					init.call(this);
 				};
-			} else if (!test) {
+			} else if (!test && Object.getPrototypeOf(proto).constructor != Object) {
 				objectDescriptor.initialize = function() {
 					this.superCall.call(this);
-					init.apply(this, arguments);
+					arguments.length? init.apply(this, arguments): init.call(this);
 				};
 			}
 		},
@@ -181,7 +181,9 @@
 					}
 					proto = Object.getPrototypeOf(proto);
 					
-					return proto[caller.methodName].apply(this, arguments);
+					return arguments.length? 
+							proto[caller.methodName].apply(this, arguments):
+							proto[caller.methodName].call(this);
 				} else {		
 					throw new ReferenceError("superCall can not be called outside of object inheritance");
 				}
@@ -213,6 +215,38 @@
 	var Trait = Object.inherit({});
 	var Bind = Trait.inherit({
 		extend: {
+			initialize: function() {
+				try {	
+					Object.defineProperty(this.prototype, 'bind', {
+						get: function() {
+							return this.bind = Bind.create(this);
+						},
+						set: function(val) {
+							Object.defineProperty(this, 'bind', {
+								value: val
+							});
+						},
+						configurable: true
+					});
+					
+					this.Object = Object.inherit({
+						initialize: function(self) {
+							this.self = self;
+						}
+					});
+				} catch (e) {
+					this.Object = Object.inherit({
+						initialize: function(self) {
+							this.self = self;
+							
+							var bind = this;
+							Bind.each(self, function(name, method) {
+								bind[name] = method.bind(bind.self);
+							});
+						}
+					});
+				}
+			},
 			create: function(obj) {
 				if (!obj.constructor.Bind) {
 					try {						
@@ -256,37 +290,6 @@
 			}
 		}
 	});
-
-	try {	
-		Object.defineProperty(Bind.prototype, 'bind', {
-			get: function() {
-				return this.bind = Bind.create(this);
-			},
-			set: function(val) {
-				Object.defineProperty(this, 'bind', {
-					value: val
-				});
-			},
-			configurable: true
-		});
-		
-		Bind.Object = Object.inherit({
-			initialize: function(self) {
-				this.self = self;
-			}
-		});
-	} catch (e) {
-		Bind.Object = Object.inherit({
-			initialize: function(self) {
-				this.self = self;
-				
-				var bind = this;
-				Bind.each(self, function(name, method) {
-					bind[name] = method.bind(bind.self);
-				});
-			}
-		});
-	}
 	
 	var nativeClasses = [Boolean, Number, String, Array, Function, Date, RegExp, Error];
 	for (var i = 0, cls; cls = nativeClasses[i]; ++i) {
