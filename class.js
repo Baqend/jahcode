@@ -43,17 +43,20 @@
 					result = Object.properties[name](proto, objectDescriptor, name);
 				} 
 				
-				var d = objectDescriptor[name];
 				if (!result) {											
+					var d = objectDescriptor[name];
+					
+					if (d instanceof Function) {
+						if (/this\.superCall/.test(d.toString())) {
+							d = Object.createSuperCallWrapper(klass, name, d);
+						}
+					}
+						
 					if (!d || !(d.hasOwnProperty('get') || d.hasOwnProperty('set'))) {				
 						proto[name] = d;
 					} else {
 						Object.defineProperty(proto, name, d);
 					}
-				}
-				
-				if (d instanceof Function) {
-					d.methodName = name;
 				}
 			}
 			
@@ -85,7 +88,7 @@
 			}
 		},
 		getBasePrototype: function(cls) {
-			if (cls.prototype.superCall)
+			if (cls.prototype.isInstanceOf)
 				return cls.prototype;
 			
 			if (!cls.basePrototype) {
@@ -104,27 +107,31 @@
 		createPrototypeChain: function(cls, parentClass, traits) {
 			var proto = Object.getBasePrototype(parentClass);
 			var linearizedTypes = parentClass.linearizedTypes.slice();
+			var prototypeChain = parentClass.prototypeChain? parentClass.prototypeChain.slice(): [proto];
 			
 			for (var i = 0, trait; trait = traits[i]; ++i) {
 				if (!(trait.prototype instanceof Trait)) 
-					throw new TypeError("Only traits can be mixed in");
+					throw new TypeError("Only traits can be mixed in.");
 				
 				var linearizedTraitTypes = trait.linearizedTypes;
 				for (var j = 0, type; type = linearizedTraitTypes[j]; ++j) {
 					if (linearizedTypes.indexOf(type) == -1 && type != Trait) {
-						linearizedTypes.push(type);
-						
 						proto = Object.create(proto);
 						Object.cloneOwnProperties(proto, type.wrappedPrototype? type.wrappedPrototype: type.prototype);
+
 						proto.constructor = type;
+						
+						linearizedTypes.push(type);
+						prototypeChain.push(proto);
 					}					
 				}
 			}
-	
-			linearizedTypes.push(cls);
 			
 			proto = Object.create(proto);
 			proto.constructor = cls;
+
+			linearizedTypes.push(cls);
+			prototypeChain.push(proto);
 			
 			if (fakePrototype) {
 				cls.wrappedPrototype = proto;
@@ -134,18 +141,43 @@
 			}
 				
 			cls.linearizedTypes = linearizedTypes;
+			cls.prototypeChain = prototypeChain;
 			
 			return proto;
+		},
+		createSuperCallWrapper: function(declaringClass, methodName, method) {
+			return function() {
+				var current = this.superCall;
+				
+				this.superCall = function() {
+					var cls = classOf(this);
+					var index = cls.linearizedTypes.lastIndexOf(declaringClass);
+					if (index == -1)
+						throw new ReferenceError("superCall can't determine any super method");
+					
+					var proto = cls.prototypeChain[index - 1];
+					
+					return arguments.length? 
+							proto[methodName].apply(this, arguments):
+							proto[methodName].call(this);
+				}
+				
+				var result = arguments.length? method.apply(this, arguments): method.call(this);
+				
+				this.superCall = current;
+				
+				return result;
+			}
 		}
 	});
 	
 	Object.extend(Object.properties, {
 		initialize: function(proto, objectDescriptor) {
 			var init = objectDescriptor.initialize;
-			var test = /this\.superCall\(/.test(init.toString());
+			var test = /this\.superCall/.test(init.toString());
 			if (proto instanceof Trait) {
 				if (test)
-					throw new TypeError('trait constructors can not call super constructors directly');
+					throw new TypeError('Trait constructors can not call super constructors directly.');
 				
 				objectDescriptor.initialize = function() {
 					arguments.length? this.superCall.apply(this, arguments): this.superCall.call(this);
@@ -165,31 +197,6 @@
 	});
 	
 	Object.extend(Object.baseDescriptors, {
-		superCall: {
-			value: function superCall() {
-				var caller = superCall.caller || arguments.callee.caller;
-				
-				if (caller && caller.methodName) {
-					var methodName = caller.methodName;
-					
-					var proto = this;
-					while (!proto.hasOwnProperty(methodName) || proto[methodName] !== caller) {
-						proto = Object.getPrototypeOf(proto);
-		
-						if (proto == Object.prototype)
-							throw new ReferenceError("superCall can't determine any super method");
-					}
-					proto = Object.getPrototypeOf(proto);
-					
-					return arguments.length? 
-							proto[caller.methodName].apply(this, arguments):
-							proto[caller.methodName].call(this);
-				} else {		
-					throw new ReferenceError("superCall can not be called outside of object inheritance");
-				}
-			},
-			enumerable: false
-		},
 		isInstanceOf: {
 			value: function(klass) {
 				return this instanceof klass || classOf(this).linearizedTypes.lastIndexOf(klass) != -1;
