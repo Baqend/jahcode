@@ -1,26 +1,38 @@
 {
-    "name": "js-class",
-    "version": "0.9.3",
-    "description": "A tiny class libary based on native JS concepts",
-    "homepage": "http://github.com/fbuecklers/js-class/",
-    "contributors": [
-        "Florian Buecklers <fbuecklers@googlemail.com> (http://github.com/fbuecklers/)"
-    ],
-    "bugs": {
-        "web": "http://github.com/fbuecklers/js-class/issues"
-    },
-    "licenses": [
-        {
-            "type": "MIT",
-            "url": "http://github.com/fbuecklers/js-class/raw/master/MIT-LICENSE.txt"
-        }
-    ],
-    "main": "class.js",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/fbuecklers/js-class.git"
-    },
-    "engines": {
-        "node": ">=0.2.0"
+  "name": "jahcode",
+  "version": "1.0.0",
+  "description": "Scala like Classes and Traits in JavaScript",
+  "author": "Florian Buecklers",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://raw.github.com/fbuecklers/jahcode/master/MIT-LICENSE.txt"
     }
+  ],
+  "main": "jahcode.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fbuecklers/jahcode.git"
+  },
+  "bugs": {
+    "mail": "fbuecklers@gmail.com",
+    "url": "https://github.com/fbuecklers/jahcode/issues"
+  },
+  "scripts": {
+    "test": "jasmine-node test",
+    "minify": "uglifyjs jahcode.js --source-map=jahcode.map --comments -c -m -o jahcode.min.js"
+  },
+  "keywords": [
+    "class",
+    "traits",
+    "prototype",
+    "inheritance",
+    "mixins",
+    "extends",
+    "bind"
+  ],
+  "readmeFilename": "README.md",
+  "engines": {
+    "node": ">=0.2.0"
+  }
 }
