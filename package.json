@@ -2,7 +2,18 @@
   "name": "jahcode",
   "version": "1.0.0",
   "description": "Scala like Classes and Traits in JavaScript",
-  "author": "Florian Buecklers",
+  "author": {
+    "name": "Florian Buecklers",
+    "email": "fbuecklers@gmail.com"
+  },
+  "contributors": [{
+    "name": "19 Finger | interactive development",
+    "url": "http://www.19f.de"
+  }, {
+    "name": "redPlant - 3D Realtime Studio",
+    "url": "http://www.redplant.de"
+  }],
+  "homepage": "http://jahcode.com",
   "licenses": [
     {
       "type": "MIT",
@@ -12,15 +23,19 @@
   "main": "jahcode.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fbuecklers/jahcode.git"
+    "url": "git@github.com:fbuecklers/jahcode.git"
   },
   "bugs": {
     "mail": "fbuecklers@gmail.com",
     "url": "https://github.com/fbuecklers/jahcode/issues"
   },
+  "devDependencies": {
+    "jasmine-node": "1.7.x",
+    "uglify-js": "2.3.x"
+  }, 
   "scripts": {
     "test": "jasmine-node test",
-    "minify": "uglifyjs jahcode.js --source-map=jahcode.map --comments -c -m -o jahcode.min.js"
+    "minify": "uglifyjs jahcode.js --source-map=jahcode.map -c -m -o jahcode.min.js  --comments /\\/*!/"
   },
   "keywords": [
     "class",
@@ -28,7 +43,6 @@
     "prototype",
     "inheritance",
     "mixins",
-    "extends",
     "bind"
   ],
   "readmeFilename": "README.md",

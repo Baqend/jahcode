@@ -1,6 +1,4 @@
-/* Scala like Classes and Traits in JavaScript v1.0.0
-//Copyright 2011-2013, MIT license
- */
+/*! Jahcode v1.0.0 | jahcode.com | Copyright 2011-2013 by Florian Buecklers | MIT license */
 
 (function(global) {
     var fakePrototype = Object.getPrototypeOf({
@@ -151,20 +149,21 @@
             return proto;
         },
         createSuperCallWrapper : function(declaringClass, methodName, method) {
+            var superCall = function() {
+                var cls = classOf(this);
+                var index = cls.linearizedTypes.lastIndexOf(declaringClass);
+                if (index == -1) {
+                    throw new ReferenceError("superCall can't determine any super method");
+                }
+
+                var proto = cls.prototypeChain[index - 1];
+
+                return arguments.length ? proto[methodName].apply(this, arguments) : proto[methodName].call(this);
+            };
+
             return function() {
                 var current = this.superCall;
-
-                this.superCall = function() {
-                    var cls = classOf(this);
-                    var index = cls.linearizedTypes.lastIndexOf(declaringClass);
-                    if (index == -1) {
-                        throw new ReferenceError("superCall can't determine any super method");
-                    }
-
-                    var proto = cls.prototypeChain[index - 1];
-
-                    return arguments.length ? proto[methodName].apply(this, arguments) : proto[methodName].call(this);
-                };
+                this.superCall = superCall;
 
                 var result = arguments.length ? method.apply(this, arguments) : method.call(this);
 
@@ -188,7 +187,7 @@
                     arguments.length ? this.superCall.apply(this, arguments) : this.superCall.call(this);
                     init.call(this);
                 };
-            } else if (!test && Object.getPrototypeOf(proto).constructor != Object) {
+            } else if (!test && classof(proto) != Object) {
                 objectDescriptor.initialize = function() {
                     this.superCall.call(this);
                     arguments.length ? init.apply(this, arguments) : init.call(this);

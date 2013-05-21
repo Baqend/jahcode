@@ -78,6 +78,35 @@ describe("Native arrays", function() {
             expect(classOf(vals[i])).toBe(Array);
         }
     });
+
+    it("should be extendable", function() {
+        var myArray = Array.inherit({
+            prepend : function(el) {
+                this.unshift(el);
+            },
+            append : function(el) {
+                this.push(el);
+            }
+        });
+
+        var arr = new myArray(1, 2, 3);
+        expect(arr.length).toBe(3);
+
+        expect(arr).isInstanceOf(Array);
+        expect(arr).isInstanceOf(myArray);
+
+        arr.prepend(5);
+        expect(arr.length).toBe(4);
+
+        arr.append(17);
+        expect(arr.length).toBe(5);
+
+        expect(arr[0]).toBe(5);
+        expect(arr[1]).toBe(1);
+        expect(arr[2]).toBe(2);
+        expect(arr[3]).toBe(3);
+        expect(arr[4]).toBe(17);
+    });
 });
 
 describe("Native dates", function() {
@@ -132,5 +161,21 @@ describe("Native errors", function() {
     it("should return the concrete error class", function() {
         expect(classOf(vals[0])).toBe(Error);
         expect(classOf(vals[1])).toBe(TypeError);
+    });
+
+    it("should be extendable", function() {
+        var myError = Error.inherit({
+            initialize : function(message, state) {
+                this.superCall(message);
+                this.state = state;
+            }
+        });
+
+        var err = new myError("A test error", 43);
+        expect(err.state).toBe(43);
+        expect(err.message).toBe("A test error");
+
+        expect(err).isInstanceOf(Error);
+        expect(err).isInstanceOf(myError);
     });
 });
