@@ -1,4 +1,4 @@
-/*! Jahcode v1.0.0 | jahcode.com | Copyright 2011-2013 by Florian Buecklers | MIT license */
+/*! Jahcode v1.0.1 | jahcode.com | Copyright 2011-2013 by Florian Buecklers | MIT license */
 
 (function(global) {
     var fakePrototype = Object.getPrototypeOf({
@@ -187,7 +187,7 @@
                     arguments.length ? this.superCall.apply(this, arguments) : this.superCall.call(this);
                     init.call(this);
                 };
-            } else if (!test && classof(proto) != Object) {
+            } else if (!test && classOf(proto) != Object) {
                 objectDescriptor.initialize = function() {
                     this.superCall.call(this);
                     arguments.length ? init.apply(this, arguments) : init.call(this);
