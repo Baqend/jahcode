@@ -1,7 +1,7 @@
 beforeEach(function() {
     this.addMatchers({
         hasPrototypeChain : function(chain) {
-            var expected = chain.isInstanceOf(Array) ? chain : arguments;
+            var expected = Array.isInstance(chain) ? chain : arguments;
 
             var proto = this.actual;
             for ( var i = expected.length - 1, cls; cls = expected[i]; --i) {
@@ -18,10 +18,10 @@ beforeEach(function() {
         },
 
         isInstanceOf : function(klasses) {
-            var expected = klasses.isInstanceOf(Array) ? klasses : arguments;
+            var expected = Array.isInstance(klasses) ? klasses : arguments;
 
             for ( var i = 0, cls; cls = expected[i]; ++i) {
-                if (this.isNot === this.actual.isInstanceOf(cls)) {
+                if (this.isNot === cls.isInstance(this.actual)) {
                     return this.isNot;
                 }
             }
@@ -30,19 +30,15 @@ beforeEach(function() {
         },
 
         asInstanceOf : function(klasses) {
-            var expected = klasses.isInstanceOf(Array) ? klasses : arguments;
+            var expected = Array.isInstance(klasses) ? klasses : arguments;
 
             for ( var i = 0, cls; cls = expected[i]; ++i) {
-                try {
-                    this.actual.asInstanceOf(cls);
-
-                    if (this.isNot) {
-                        return this.isNot;
-                    }
-                } catch (e) {
-                    if (!this.isNot) {
-                        return this.isNot;
-                    }
+                if (!this.isNot) {
+                    if (cls.asInstance(this.actual) !== this.actual)
+                        return false;
+                } else {
+                    if (cls.asInstance(this.actual) === this.actual);
+                        return true;
                 }
             }
 
@@ -50,7 +46,7 @@ beforeEach(function() {
         },
 
         toBeCastable : function(to) {
-            var expected = to.isInstanceOf(Array) ? to : arguments;
+            var expected = Array.isInstance(to) ? to : arguments;
 
             for ( var i = 0, cls; cls = expected[i]; ++i) {
                 if (this.isNot) {

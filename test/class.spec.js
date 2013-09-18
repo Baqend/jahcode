@@ -97,3 +97,9 @@ describe("Class declaration", function() {
         });
     });
 });
+
+describe("asInstance", function() {
+    it('should return the instance if it is from the right type', function() {
+
+    })
+});

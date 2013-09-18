@@ -14,6 +14,22 @@ describe("Native booleans", function() {
             expect(classOf(vals[i])).toBe(Boolean);
         }
     });
+
+    it("should be converted to true", function() {
+        var truly = [true, "test", 2, 3.3, /test/, [], [1,2,3], function() {}, new Date(), new Error()];
+
+        for ( var i = 0; i < truly.length; ++i) {
+            expect(Boolean.asInstance(truly[i])).toBeTruthy();
+        }
+    });
+
+    it("should be converted to false", function() {
+        var falsely = [false, "", 0, 0.0, undefined, NaN];
+
+        for ( var i = 0; i < falsely.length; ++i) {
+            expect(Boolean.asInstance(falsely[i])).toBeFalsy();
+        }
+    });
 });
 
 describe("Native numbers", function() {
@@ -30,6 +46,15 @@ describe("Native numbers", function() {
             expect(classOf(vals[i])).toBe(Number);
         }
     });
+
+    it("should be converted to number", function() {
+        var val = [true, false, "123", "22.45", 2, 3.3];
+        var num = [1, 0, 123, 22.45, 2, 3.3];
+
+        for ( var i = 0; i < val.length; ++i) {
+            expect(Number.asInstance(val[i])).toBe(num[i]);
+        }
+    });
 });
 
 describe("Native strings", function() {
@@ -44,6 +69,15 @@ describe("Native strings", function() {
     it("should be instances of String", function() {
         for ( var i = 0; i < vals.length; ++i) {
             expect(classOf(vals[i])).toBe(String);
+        }
+    });
+
+    it("should be converted to String", function() {
+        var val = [true, false, 123, 22.45, "test"];
+        var num = ["true", "false", "123", "22.45", "test"];
+
+        for ( var i = 0; i < vals.length; ++i) {
+            expect(String.asInstance(val[i])).toBe(num[i]);
         }
     });
 });
@@ -76,6 +110,14 @@ describe("Native arrays", function() {
     it("should be instances of Array", function() {
         for ( var i = 0; i < vals.length; ++i) {
             expect(classOf(vals[i])).toBe(Array);
+        }
+    });
+
+    it("should be converted to Array", function() {
+        var val = [[1,2,3], (function() {return arguments})(1,2,3), {0:1,1:2,2:3,length:3}];
+
+        for ( var i = 0; i < val.length; ++i) {
+            expect(Array.asInstance(val[i])).toEqual([1,2,3]);
         }
     });
 

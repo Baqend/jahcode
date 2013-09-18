@@ -134,7 +134,6 @@ describe("A complex model", function() {
         expect(t).toBeCastable(types);
 
         expect(t).not.isInstanceOf(otherTypes);
-        expect(t).not.asInstanceOf(otherTypes);
         expect(t).not.toBeCastable(otherTypes);
 
         expect(classOf(t)).toBe(TraitA);
@@ -165,7 +164,6 @@ describe("A complex model", function() {
         expect(t).toBeCastable(types);
 
         expect(t).not.isInstanceOf(otherTypes);
-        expect(t).not.asInstanceOf(otherTypes);
         expect(t).not.toBeCastable(otherTypes);
 
         expect(classOf(t)).toBe(TraitB);
@@ -196,7 +194,6 @@ describe("A complex model", function() {
         expect(t).toBeCastable(types);
 
         expect(t).not.isInstanceOf(otherTypes);
-        expect(t).not.asInstanceOf(otherTypes);
         expect(t).not.toBeCastable(otherTypes);
 
         expect(classOf(t)).toBe(TraitC);
@@ -229,7 +226,6 @@ describe("A complex model", function() {
         expect(t).toBeCastable(types);
 
         expect(t).not.isInstanceOf(otherTypes);
-        expect(t).not.asInstanceOf(otherTypes);
         expect(t).not.toBeCastable(otherTypes);
 
         expect(classOf(t)).toBe(TraitD);
@@ -261,7 +257,6 @@ describe("A complex model", function() {
         expect(t).toBeCastable(types);
 
         expect(t).not.isInstanceOf(otherTypes);
-        expect(t).not.asInstanceOf(otherTypes);
         expect(t).not.toBeCastable(otherTypes);
 
         expect(classOf(t)).toBe(ClassA);
@@ -296,7 +291,6 @@ describe("A complex model", function() {
         expect(t).toBeCastable(types);
 
         expect(t).not.isInstanceOf(otherTypes);
-        expect(t).not.asInstanceOf(otherTypes);
         expect(t).not.toBeCastable(otherTypes);
 
         expect(classOf(t)).toBe(ClassB);
