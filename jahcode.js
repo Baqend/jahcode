@@ -6,13 +6,19 @@
     }) == String.prototype;
 
     if (!Function.prototype.extend) {
+        /**
+         * Extends the target with the properties of props and return target
+         * @param {*=} target The target to extends or thisArg, if it is not set
+         * @param {Object} props The properties to extend
+         * @returns {*} The extended target
+         */
         Function.prototype.extend = function(target, props) {
             if (!props) {
                 props = target;
                 target = this;
             }
 
-            for (name in props) {
+            for (var name in props) {
                 if (props.hasOwnProperty(name)) {
                     target[name] = props[name];
                 }
@@ -22,8 +28,20 @@
         };
     }
 
-    Object.extend(Function.prototype, {
+    Object.extend(Function.prototype, /** @lends Function.prototype */ {
+        /**
+         * The linearized type hierarchy of this class
+         * @type Function[]
+         */
         linearizedTypes : [Object],
+
+        /**
+         * Inherits this constructor and extends it by additional properties and methods. Optional there can be mixined
+         * additional Traits
+         * @param {Trait...} traits Additional traits to mixin
+         * @param {Object} classDescriptor The descriptor of the class properties and methods
+         * @returns {Function} The new created child class
+         */
         inherit : function() {
             var klass = function(toCast) {
                 if (!(this instanceof klass)) {
@@ -68,12 +86,25 @@
 
             return klass;
         },
+
+        /**
+         * Indicates if the object is an instance of this class
+         * @param obj The object to check for
+         * @returns {boolean} <code>true</code> if the object is defined and
+         */
         isInstance : function(obj) {
             if (obj === null || obj === undefined)
                 return false;
 
             return Object(obj) instanceof this || classOf(obj).linearizedTypes.lastIndexOf(this) != -1;
         },
+
+        /**
+         * Checks if the object is an instance of this class and returns the object or try to convert the
+         * object to an instance of this class by calling {@link #conv}
+         * @param obj The object to check
+         * @returns {*} The typed object or null, if the object can't be typed to an instance of this class
+         */
         asInstance : function(obj) {
             if (this.isInstance(obj)) {
                 return obj;
@@ -81,12 +112,18 @@
                 return this.conv(obj);
             }
         },
-        conv : function() {
+
+        /**
+         * Converts the given value to an instance of this class, or returns null, if the value can't be converted
+         * @param {*} value The value to convert
+         * @returns {null} The converted value or null
+         */
+        conv : function(value) {
             return null;
         }
     });
 
-    Object.extend({
+    Object.extend( /** @lends Object **/ {
         properties : {},
         cloneOwnProperties : function(target, src) {
             var names = Object.getOwnPropertyNames(src);
@@ -199,13 +236,29 @@
         }
     });
 
+    /**
+     * Returns the constructor of the given object, works for objects and primitive types
+     * @param {*} object The constructor to return for
+     * @returns {Function} The constructor of the object
+     * @global
+     */
     var classOf = function(object) {
         return Object.getPrototypeOf(Object(object)).constructor;
     };
 
+    /**
+     * @mixin Trait
+     * @global
+     */
     var Trait = Object.inherit({});
 
+    /**
+     * @extends Trait
+     * @mixin Bind
+     * @global
+     */
     var Bind = Trait.inherit({
+        /** @lends Bind */
         extend : {
             initialize : function() {
                 try {
@@ -239,6 +292,14 @@
                     });
                 }
             },
+
+            /**
+             * Creates a bind proxy for the given object
+             * Each method of the given object is reflected on the proxy and
+             * bound to the object context
+             * @param {*} obj The object which will be bound
+             * @returns {Bind} The bound proxy
+             */
             create : function(obj) {
                 if (!obj.constructor.Bind) {
                     try {
@@ -281,6 +342,11 @@
                 this.bind = Bind.create(this);
             }
         }
+
+        /**
+         * @type Bind
+         * @name Bind.prototype.bind
+         */
     });
 
     var nativeClasses = [Boolean, Number, String, Function, RegExp, Error];
@@ -305,8 +371,10 @@
     };
 
     Error.prototype.initialize = function(message) {
-        Object.extend(this, new Error());
-
+        var stack = new Error().stack || 'Error';
+        stack = stack.substring(stack.indexOf('\n') + 1);
+        
+        this.stack = message + '\n' + stack;
         this.message = message;
     };
 

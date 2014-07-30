@@ -216,6 +216,7 @@ describe("Native errors", function() {
         var err = new myError("A test error", 43);
         expect(err.state).toBe(43);
         expect(err.message).toBe("A test error");
+        expect(err.stack.indexOf("A test error")).toBe(0);
 
         expect(err).isInstanceOf(Error);
         expect(err).isInstanceOf(myError);
