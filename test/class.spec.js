@@ -5,6 +5,10 @@ describe("Class declaration", function() {
         initialize : function(a, b, c) {
             this.called = true;
             this.params = [a, b, c];
+        },
+
+        error: function() {
+            throw 'myClass';
         }
     });
 
@@ -94,6 +98,32 @@ describe("Class declaration", function() {
             expect(obj.called).toBeTruthy();
             expect(obj.extCalled).toBeTruthy();
             expect(obj.extExtCalled).toBeTruthy();
+        });
+
+        it("should work exceptions throwing in a superCall", function() {
+            var myExtClass = myClass.inherit({
+                error: function() {
+                   try {
+                       this.superCall();
+                   } catch (e) {
+                        throw e + ' myExtClass';
+                   }
+                }
+            });
+
+            var myExtExtClass = myExtClass.inherit({
+                error: function() {
+                    try {
+                        this.superCall();
+                    } catch (e) {
+                        throw e + ' myExtExtClass';
+                    }
+                }
+            });
+
+            var obj = new myExtExtClass();
+            expect(function() { obj.error(); }).toThrow('myClass myExtClass myExtExtClass');
+            expect(obj.superCall).toBeUndefined();
         });
     });
 });

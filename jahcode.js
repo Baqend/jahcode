@@ -1,4 +1,4 @@
-/*! Jahcode v1.1.0 | jahcode.com | Copyright 2011-2013 by Florian Buecklers | MIT license */
+/*! Jahcode v1.1.2 | jahcode.com | Copyright 2011-2014 by Florian Buecklers | MIT license */
 
 (function(global) {
     var fakePrototype = Object.getPrototypeOf({
@@ -118,7 +118,7 @@
          * @param {*} value The value to convert
          * @returns {null} The converted value or null
          */
-        conv : function(value) {
+        conv : function() {
             return null;
         }
     });
@@ -196,16 +196,16 @@
                 var current = this.superCall;
                 this.superCall = superCall;
 
-                var result = arguments.length ? method.apply(this, arguments) : method.call(this);
-
-                if (current) {
-                    this.superCall = current;
-                } else {
-                    // made the property invisible again
-                    delete this.superCall;
+                try {
+                    return arguments.length ? method.apply(this, arguments) : method.call(this);
+                } finally {
+                    if (current) {
+                        this.superCall = current;
+                    } else {
+                        // made the property invisible again
+                        delete this.superCall;
+                    }
                 }
-
-                return result;
             };
         }
     });

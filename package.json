@@ -1,10 +1,10 @@
 {
   "name": "jahcode",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Scala like Classes and Traits in JavaScript",
   "author": {
     "name": "Florian Buecklers",
-    "email": "fbuecklers@gmail.com"
+    "email": "florian.buecklers@baqend.com"
   },
   "contributors": [
     {
@@ -33,7 +33,7 @@
     "url": "git@github.com:Baqend/jahcode.git"
   },
   "bugs": {
-    "mail": "fbuecklers@gmail.com",
+    "mail": "florian.buecklers@baqend.com",
     "url": "https://github.com/Baqend/jahcode/issues"
   },
   "devDependencies": {
