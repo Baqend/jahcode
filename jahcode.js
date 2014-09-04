@@ -1,4 +1,4 @@
-/*! Jahcode v1.1.2 | jahcode.com | Copyright 2011-2014 by Florian Buecklers | MIT license */
+/*! Jahcode v1.1.3 | jahcode.com | Copyright 2011-2014 by Florian Buecklers | MIT license */
 
 (function(global) {
     var fakePrototype = Object.getPrototypeOf({
@@ -64,19 +64,20 @@
                 }
 
                 if (!result) {
-                    var d = objectDescriptor[name];
+                    var d = Object.getOwnPropertyDescriptor(objectDescriptor, name);
 
-                    if (d instanceof Function) {
-                        if (/this\.superCall/.test(d.toString())) {
-                            d = Object.createSuperCallWrapper(klass, name, d);
+                    if (d.value) {
+                        var val = d.value;
+                        if (val instanceof Function) {
+                            if (/this\.superCall/.test(val.toString())) {
+                                d.value = Object.createSuperCallWrapper(klass, name, val);
+                            }
+                        } else if (val && (val.hasOwnProperty('get') || val.hasOwnProperty('value'))) {
+                            d = val;
                         }
                     }
 
-                    if (!d || !(d.hasOwnProperty('get') || d.hasOwnProperty('value'))) {
-                        proto[name] = d;
-                    } else {
-                        Object.defineProperty(proto, name, d);
-                    }
+                    Object.defineProperty(proto, name, d);
                 }
             }
 

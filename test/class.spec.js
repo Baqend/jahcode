@@ -126,10 +126,77 @@ describe("Class declaration", function() {
             expect(obj.superCall).toBeUndefined();
         });
     });
-});
 
-describe("asInstance", function() {
-    it('should return the instance if it is from the right type', function() {
+    describe("with property", function() {
+        it("should define simple property", function() {
+            var myClass = Object.inherit({
+                test: 34
+            });
 
-    })
+            expect(new myClass().test).toEqual(34);
+        });
+
+        it("should define function property", function() {
+            var myClass = Object.inherit({
+                test: function() {
+                    return 34;
+                }
+            });
+
+            expect(new myClass().test()).toEqual(34);
+        });
+
+        it("should define object property", function() {
+            var myClass = Object.inherit({
+                test: {
+                    val: 34
+                }
+            });
+
+            expect(new myClass().test.val).toEqual(34);
+        });
+
+        it("should define ecma descriptor property", function() {
+            var myClass = Object.inherit({
+                test: {
+                    value: 34
+                }
+            });
+
+            expect(new myClass().test).toEqual(34);
+        });
+
+        /* ie8 throws a syntax error for following test cases */
+        it("should define native getter and setter property", function() {
+            var myClass = Object.inherit({
+                get test() {
+                    return this._test;
+                },
+                set test(val) {
+                    this._test = val;
+                }
+            });
+
+            var cls = new myClass();
+            cls.test = 34;
+            expect(cls.test).toEqual(34);
+        });
+
+        it("should define ecma descriptor getter and setter property", function() {
+            var myClass = Object.inherit({
+                test: {
+                    get: function() {
+                        return this._test;
+                    },
+                    set: function(val) {
+                        this._test = val;
+                    }
+                }
+            });
+
+            var cls = new myClass();
+            cls.test = 34;
+            expect(cls.test).toEqual(34);
+        });
+    });
 });
