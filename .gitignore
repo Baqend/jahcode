@@ -2,4 +2,6 @@
 .project
 .settings
 *.iml
+*.iws
+*.ipr
 .idea
