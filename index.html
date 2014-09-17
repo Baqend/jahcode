@@ -1,1 +1,461 @@
-<h1>hello mighty jah jah!</h1>
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8">
+    <title>jahCODE - OOJS done right!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link href='http://fonts.googleapis.com/css?family=Ubuntu:400,700,500,300' rel='stylesheet' type='text/css'>
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/responsive.css" rel="stylesheet">
+    <link href="css/main.css" rel="stylesheet">
+
+    <!--[if lt IE 9]>
+    <script src="js/html5shiv.js"></script>
+    <![endif]-->
+
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">
+    <link rel="shortcut icon" href="../assets/ico/favicon.png">
+</head>
+
+<body data-spy="scroll" data-target=".sidebar-nav">
+
+<header class="navbar navbar-inverse navbar-fixed-top">
+    <nav class="navbar-inner">
+        <div class="container-fluid">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="brand" href="https://github.com/fbuecklers/jahcode">jahCODE</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    <li class="active"><a href="index.html">Home</a></li>
+                    <li><a href="performance.html">Performance Test</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <a href="https://github.com/fbuecklers/jahcode" class="visible-desktop">
+        <img alt="Fork me on GitHub" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"
+             style="position: absolute; top: 0; right: 0; border: 0;">
+    </a>
+</header>
+
+
+<div class="hero-unit">
+    <h1><img src="img/jahcode_logo.png" alt="JahCode!" class="logo pull-left">
+        <small>Object Oriented Javascript done Right!</small>
+    </h1>
+    <p>
+        A framework to declare Classes and Traits with ease in JS.
+        Inheritance of Classes and Traits is mapped onto the native Prototype model of JS which makes it stable and
+        fast.
+    </p>
+
+    <p>
+        <a href="https://raw.github.com/fbuecklers/jahcode/v1.1.0/jahcode.js" class="btn btn-primary btn-large">Download JahCODE 1.1.0</a>
+        <a href="https://github.com/fbuecklers/jahcode/releases/tag/v1.1.0" class="btn btn-info btn-large">Get Sources</a><br>
+    </p>
+</div>
+
+<div class="row-fluid main">
+    <div class="spanfixed">
+        <nav class="sidebar-nav">
+            <ul class="nav nav-tabs nav-stacked" data-spy="affix" data-offset-top="260">
+                <li><a href="#setup">Setup</a></li>
+                <li><a href="#defining-classes">Defining Classes</a></li>
+                <li><a href="#inheritance">Inheritance</a></li>
+                <li><a href="#static-members">Static members</a></li>
+                <li><a href="#traits">Traits</a></li>
+                <li><a href="#type-checking-and-casting">Type Checking and Casting</a></li>
+                <li><a href="#extending-traditional-classes">Extending Native Classes</a></li>
+                <li><a href="#ecma-5-based-getters-and-setters">Getters &amp; Setters</a></li>
+                <li><a href="#bind-trait">Bind Trait</a></li>
+            </ul>
+        </nav>
+    </div>
+
+<div class="content">
+
+<section id="setup">
+<h2>Setup</h2>
+<p>Just use <a href="https://raw.github.com/fbuecklers/jahcode/v1.1.0/jahcode.js">jahcode.js</a> for development or the
+    minified <a href="https://raw.github.com/fbuecklers/jahcode/v1.1.0/jahcode.min.js">jahcode.min.js</a> for production
+    environments.</p>
+
+<p>Jahcode has no external dependencies except you wan't to support none ECMA 5 based browsers.
+For those use the referred shims form the lib folder. Use both the
+    <a href="https://raw.github.com/kriskowal/es5-shim/master/es5-shim.min.js">es5-shim.min.js</a> and
+    <a href="https://raw.github.com/kriskowal/es5-shim/master/es5-sham.min.js">es5-sham.min.js</a> shims to
+    get most of the ecm5 features in older engines (i.e. IE 8 and below).</p>
+
+<pre class="prettyprint html">
+&lt;!--[if lt IE 9]&gt;
+    &lt;script src="lib/es5-shim.js"&gt;&lt;/script&gt;
+    &lt;script src="lib/es5-sham.js"&gt;&lt;/script&gt;
+&lt;![endif]--&gt;
+&lt;script src="lib/jahcode.js"&gt;&lt;/script&gt;
+</pre>
+
+<p>Jahcode can also be used in node.js environments and can be easly installed with <a href="https://npmjs.org/">npm</a>. Just type
+    <code>npm install jahcode</code> and <code>require('jahcode')</code> in your script.</p>
+
+</section>
+
+<section id="defining-classes">
+    <h2>Defining Classes</h2>
+
+    <p>A class is defined by using the inherit method.
+        The inherit method expects at least the class body as an argument .
+        The class body is written in the simple object notation and contains all members which will be available to
+        instances of the created class.
+        The optional initialize method will be called on each instance of the current class to achieve a constructor-like
+        behaviour.</p>
+
+    <p>A simple class with a constructor and one method</p>
+<pre class="prettyprint">
+var SimpleClass = Object.inherit({
+    initialize: function() {
+        //just declare your members in the constructor
+        this.text = 'Hello World';
+    },
+
+    saySomething: function() {
+        alert(this.text);
+    }
+});
+</pre>
+    <p>To use the Class just instantiate it, and use its members as you are used to</p>
+<pre class="prettyprint">
+var myClass = new SimpleClass();
+myClass.saySomething();
+</pre>
+    <p>Pass arguments to the constructor and process them in the initialize function.</p>
+<pre class="prettyprint">
+var SimpleClass = Object.inherit({
+    initialize: function(customText) {
+        this.text = customText;
+    },
+    ...
+});
+
+var myClass = new SimpleClass('Hello World');
+</pre>
+    <p>The constructor property is also available and refers the class object of an instance.</p>
+<pre class="prettyprint">myClass.constructor == SimpleClass // true
+</pre>
+
+</section>
+
+
+<section id="inheritance">
+<h2>Inheritance</h2>
+
+<p>To extend a class, simply use the inherit Method which is defined on every class object
+    On the first example we didn&#8217;t want to extend any specific class so we call the method on the Object class,
+    since the Object is the base class of all classes in JS.</p>
+
+<p>If you want to extend a specific Class, call the inherit method on that specific class instead</p>
+
+<p>For example let’s extend SimpleClass and override the saySomething method</p>
+<pre class="prettyprint">
+var SpecificClass = SimpleClass.inherit({
+    saySomething: function() {
+        alert(this.text + ' on a more specific way');
+    }
+});
+</pre>
+<p>A lot of frameworks provide a simple way to call the parents overwritten method from the overwriting child
+    method.
+    For this every object contains a superCall method which does this job.</p>
+<pre class="prettyprint">
+var SpecificClass = SimpleClass.inherit({
+    saySomething: function() {
+        alert(this.superCall() + ' on a more specific way');
+    }
+});
+</pre>
+<p>It is also possible to call the parents initialize method with the superCall method
+    Note: if an initialize method doesn’t call the parents initialize method the parents initialize method will be
+    called by default without arguments and before the childs initialize method is called</p>
+</section>
+
+<section id="static-members">
+<h2>Static members</h2>
+
+<p>To declare static members (means members that are applied to the class object itself) you can make use of the special
+    property extend.
+    The extend property is a special property which can be optionally set in the class body.</p>
+<pre class="prettyprint">
+var StaticMembersClass = SimpleClass.inherit({
+    extend: {
+        initialize: function() {
+            // this static constructor is called on definition time
+        },
+        create: function() {
+            return new this(); //this refers here to the class object itself
+        }
+    },
+    initialize: function() {
+        this.superCall('Hello World, again!');
+    }
+});
+
+var myInstance = SimpleClass.create();
+myInstance.saySomething();
+</pre>
+</section>
+
+<section id="traits">
+<h2>Traits</h2>
+
+<p>Another feature being introduced with this framework are scala-like Traits.
+    Traits can be used to define an interface with an optional provided implementation for each method, traits can be
+    mixined in classes so that they inherit the implementation of the mixined traits.
+    If the same trait occurs more than one time in the inheritance hierarchy only the first trait will stay in the
+    hierarchy.
+    Traits which are imported more than once (in the entire hierarchy) will be ignored, as it is part of the common
+    linearization process</p>
+
+<p>Defining a Trait is very similar to declaring a Class</p>
+<pre class="prettyprint">
+var SimpleTrait = Trait.inherit({
+    text: 'Hello World from a SimpleTrait',
+
+    saySomething: function() {
+        alert(this.text);
+    }
+});
+</pre>
+<p>To use one or more Traits you can import them by listing all Traits as arguments before the class body argument is
+    passed to the inherit method.</p>
+<pre class="prettyprint">
+//saySomething is imported form the SimpleTrait
+var SimpleClass = Object.inherit(SimpleTrait, {
+    initialize: function(customText) {
+        this.text = customText;
+    }
+});
+
+var myClass = new SimpleClass('Hello World with trait');
+myClass.saySomething(); // will output 'Hello World with trait'
+</pre>
+<p>Traits can also inherit and mixined other traits</p>
+<pre class="prettyprint">
+var TraitA = Trait.inherit({
+    a: function() {
+        return ', TraitA';
+    }
+});
+
+var TraitB = Trait.inherit({
+    b: function() {
+        return ', TraitB';
+    }
+});
+
+var TraitC = TraitB.inherit(TraitA, {
+    c: function() {
+        return 'from TraitC' + this.b() + this.a();
+    }
+});
+
+var ComplexClass = SimpleClass.inherit(TraitC, {
+    initialize: function() {
+        this.superCall('Hello World ' + this.c());
+    }
+});
+
+var myClass = new ComplexClass();
+myClass.saySomething(); // will output 'Hello World, from TraitC, TraitB, TraitA'
+</pre>
+</section>
+
+<section id="type-checking-and-casting">
+<h2>Type Checking and Casting</h2>
+
+<p>The common way to check the type of an instance is the use of instanceof.
+    The framework adds some more functionality for type checking.</p>
+
+<p>Even though the instanceof methods works fine for all classes and Traits which have not been mixined into an class,
+    this method doesn&#8217;t work for Traits which have been mixined.
+    For dealing with those there are two more methods inspired by scala which are owned by each object.
+    I prefer to use this methods by default for type checking. Just forget about instanceof.</p>
+
+<p>With the isInstance method you can check the type of an instance as you would with instanceof but it works for
+    classes and all mixins as well. </p>
+<p class="alert"><strong>Note:</strong> The method signature has been changed in the 1.1 release. The Method is now defined on classes
+    and not on instances anymore.</p>
+<pre class="prettyprint">SimpleClass.isInstance(myObj) // true
+SimpleTrait.isInstance(myObj) // true
+</pre>
+<p>Another way to check the type is to use asInstanceOf. It will check the type and return the object itself if the type
+    is correct. Otherwise the conv method is called on the class itself. This method be overwritten to supply a custom
+    type conversion logic.</p>
+<p class="alert"><strong>Note:</strong> The method signature has been changed in the 1.1 release. The Method is now defined on classes
+    and not on instances anymore. In addition this method do not throw an exception anymore.</p>
+<pre class="prettyprint">SimpleClass.asInstanceOf(myObj) // returns myObj
+SimpleTrait.asInstanceOf(myObj) // returns myObj
+MyFunkyClass.asInstanceOf(myObj) // returns the MyFunkyClass.conv(myObj) result, the default implementation returns null
+</pre>
+<p>The previous conversion logic is sometimes called soft casting and can be alternatively used by invoking the class
+    constructor of an jahcode created class. This type of conversion is inspired by Actionscript, where you can make use of the class
+    constructor to cast an object to the desired type. It will return null if the type does not.</p>
+<pre class="prettyprint">SimpleClass(myClass) // returns myClass
+SimpleTrait(myObj) // returns myObj
+MyFunkyClass(myObj) // returns null
+</pre>
+<p>The actual type conversion is implemented in the MyClass.conv Method which is inherited by each javascript class. Furthermore
+this method is implemented for all native javascript types</p>
+<pre class="prettyprint">SimpleClass(myObj) // returns myObj
+SimpleTrait(myObj) // returns myObj
+MyFunkyClass(myObj) // returns null
+
+Number.asInstance('2.3') // returns 2.3
+String.asInstance(34) // returns '34'
+
+(function() {
+    Array.asInstance(arguments) // returns a native array [1, 2, 3]
+})(1, 2, 3);
+</pre>
+</section>
+
+<section id="extending-traditional-classes">
+<h2>Extending Traditional Classes</h2>
+
+<p>It is also possible to mix classes written in this framework with classes that are written in traditional way</p>
+<pre class="prettyprint">
+var MyAlreadyDefiniedClass = function(message) {
+    this.message = message;
+}
+
+MyAlreadyDefiniedClass.prototype.getSomethingToSay = function() { // :-&lt;
+    return this.message;
+}
+
+MyComplexClass = MyAlreadyDefiniedClass.inherit({
+    initialize: function() {
+        //will be forwarded to the traditional constructor
+        this.superCall('My really complex message');
+    },
+
+    saySomething: function() {
+        alert(this.getSomethingToSay());
+    }
+});
+
+var myComplexObject = new MyComplexClass();
+myComplexObject.saySomething(); // alert 'My really complex message'
+
+myComplexObject.isInstanceOf(MyAlreadyDefiniedClass) // returns true
+myComplexObject.isInstanceOf(MyComplexClass) // returns true
+</pre>
+</section>
+
+<section id="ecma-5-based-getters-and-setters">
+<h2>ECMA 5 Based Getters and Setters</h2>
+
+<p>Another new feature what was introduced with ECMA 5 was the possibility to declare getters and setters.
+    You can used them already in the class body definition of any class and they work as same to the standard</p>
+
+<p>Note: this feature works only in ECMA 5 based browsers, if you want to support older browser just don&#8217;t use
+    this feature.
+    The other parts of this framework works also in older browser if you import the shims from lib/es5-shim.min.js</p>
+<pre class="prettyprint">
+var GetterSetterClass = Object.inherit(SimpleTrait, {
+    text: {
+        get: function() {
+            return this._text;
+        },
+        set: function(newText) {
+            this._text = newText;
+            this.saySomething();
+        },
+        enumerable: false //Also the other ECMA 5 settings for declaring properties works here
+    }
+});
+
+var myClass = new GetterSetterClass();
+myClass.text = 'Hello World!'; // alert 'Hello World!'
+</pre>
+</section>
+
+<section id="bind-trait">
+<h2>Bind Trait</h2>
+
+<p>This Trait, improves the way handling method references which is a common use case when using them as event handlers.
+    As you know Objects in JavaScript are first class objects
+    so methods lose they scope if you bind them i.e. as event handler. In most cases we don&#8217;t want to lose the
+    reference to the origin
+    object who owns our event handler. So if you import the Bind trait you can bind any method of the object on the fly.
+    To do that the Bind trait declares a single field named &#8220;bind&#8221;. This field keeps an object which
+    reflects all methods
+    declared by that class or any parent class. But the returned method references are bind to the object context when
+    they are first used.</p>
+
+<p>Note that the bind object and each method references are created when they are first used and not at instantiation
+    time</p>
+<pre class="prettyprint">
+var MyEventHandler = SimpleClass.inherit(Bind, { //just mixin the Bind trait and methods can be bind
+    initialize: {
+        //bind the click method to this context on the fly and keep the reference
+        //so multiple access to the same field will always return the same reference
+        window.addEventListener("click", this.bind.click);
+    },
+    click: function() {
+        //this refers here to the MyEventHandler instance
+        this.saySomething();
+        this.done();
+    },
+    done: function() {
+        //we can use the same reference to unregister the event handler
+        window.removeEventListener("click", this.bind.click);
+    }
+});
+
+var myHandler = new MyEventHandler();
+</pre>
+<p>If you want to create your own Bind object instance, you can use the Bind.create(obj) method. This method
+    creates a new bounded object which holds all the methods defined on the given obj argument. The methods on
+    the returned bounded object are bound to the origin object. This method is really useful if you don&#8217;t
+    define
+    the actual Class and therefore Bind can&#8217;t be mixed in or the bind field is used for something else.</p>
+<pre class="prettyprint">
+var MyEventHandler = Object.inherit({
+    click: function() {
+        //this refers here to the MyEventHandler instance
+        this.clicked = true;
+    }
+});
+
+var myHandler = new MyEventHandler();
+myBoundedHandler = Bind.create(myHandler);
+
+window.addEventListener("click", myBoundedHandler.click);
+</pre>
+</section>
+</div>
+</div>
+
+<hr>
+
+<footer>
+
+</footer>
+
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="js/jquery.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?lang=js"></script>
+
+</body>
+</html>

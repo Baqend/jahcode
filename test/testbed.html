@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Testbed</title>
+    <script type="text/javascript" src="libs.js"></script>
+<script type="text/javascript">
+var libName = location.href.substring(location.href.indexOf('?') + 1)
+var lib = libs[libName];
+var testNames = [];
+
+if (!document.head)
+    document.head = document.getElementsByTagName("head")[0];
+
+if (lib) {
+    for (var i = 0; i < lib.src.length; ++i) {
+        load(libName + '/' + lib.src[i]);
+    }
+
+    load('tests.js');
+}
+
+window.onload = function () {
+    if (!document.body)
+        document.body = document.getElementsByTagName("body")[0];
+
+    if (lib) {
+        log('Initialized ' + lib.name + ' ...');
+
+        for (var name in tests) {
+            testNames.push(name);
+        }
+    } else {
+        log('Nothing to do.')
+    }
+}
+
+function load(src) {
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src = src;
+    document.head.appendChild(script);
+}
+
+function log(msg) {
+    if (console && console.log)
+        console.log(msg);
+
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(msg));
+
+    document.body.appendChild(div);
+}
+
+function size() {
+    var i = 0;
+
+    for (var name in tests)
+        i++;
+
+    return i;
+}
+
+function runTests(iterations) {
+    for (var testName in tests) {
+        var diff = runTest(testName, iterations);
+        log('Completed in ' + diff + 'ms');
+    }
+}
+
+function runTest(testName, iterations) {
+    if (!iterations)
+        iterations = 1000;
+
+    log('Testing ' + testName + ' with ' + iterations + ' iterations');
+
+    tests[testName](iterations);
+
+    return stopTime - startTime;
+}
+
+var startTime, stopTime;
+function start() {
+    startTime = new Date().getTime();
+}
+
+function stop() {
+    stopTime = new Date().getTime();
+}
+</script>
+</head>
+<body>
+</body>
+</html>

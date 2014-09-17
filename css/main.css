@@ -1,0 +1,129 @@
+.clearfix {
+    *zoom: 1;
+}
+.clearfix:before,
+.clearfix:after {
+    display: table;
+    content: "";
+    line-height: 0;
+}
+.clearfix:after {
+    clear: both;
+}
+.hide-text {
+    font: 0/0 a;
+    color: transparent;
+    text-shadow: none;
+    background-color: transparent;
+    border: 0;
+}
+.input-block-level {
+    display: block;
+    width: 100%;
+    min-height: 34px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+body {
+    background-image: url(../img/waterlable.png);
+    background-position: right bottom;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-size: 30%;
+}
+iframe {
+    border-width: 0;
+}
+.logo {
+    margin: 40px 40px 0 0;
+}
+.hero-unit {
+    min-height: 250px;
+    padding: 40px 40px 10px;
+    line-height: 1.5em;
+    background-color: #e2eef4;
+    background-image: -moz-linear-gradient(top, #edf4f8, #d1e4ee);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#edf4f8), to(#d1e4ee));
+    background-image: -webkit-linear-gradient(top, #edf4f8, #d1e4ee);
+    background-image: -o-linear-gradient(top, #edf4f8, #d1e4ee);
+    background-image: linear-gradient(to bottom, #edf4f8, #d1e4ee);
+    background-repeat: repeat-x;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffedf4f8', endColorstr='#ffd1e4ee', GradientType=0);
+}
+.hero-unit h1 {
+    line-height: .7em;
+    margin-bottom: .3em;
+}
+.hero-unit p {
+    max-width: 1200px;
+}
+.hero-unit a.btn {
+    margin: 0 10px 10px 0;
+}
+.main {
+    margin: 40px;
+    width: auto;
+}
+.main section {
+    padding-top: 40px;
+}
+pre.prettyprint {
+    border-color: #b6d5e4;
+    background-color: rgba(219, 233, 241, 0.5);
+    padding: 15px 20px;
+}
+.nav-tabs > li > a {
+    border-color: #d1e4ee;
+}
+.nav-tabs > li > a:after {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+    vertical-align: text-top;
+    background-image: url("../img/glyphicons-halflings.png");
+    background-position: -456px -72px;
+    background-repeat: no-repeat;
+    margin-top: 1px;
+}
+.nav-tabs > li > a:hover,
+.nav-tabs > li > a:focus {
+    border-color: #edf4f8;
+    background-color: #edf4f8;
+}
+.nav-tabs > .active > a,
+.nav-tabs > .active > a:hover,
+.nav-tabs > .active > a:focus {
+    color: #edf4f8;
+    border-color: #edf4f8;
+    background-color: #a4cadd;
+}
+.row-fluid .spanfixed {
+    width: 230px;
+}
+.row-fluid .spanfixed ul {
+    top: 85px;
+    width: 230px;
+}
+.row-fluid .content {
+    margin-left: 270px;
+}
+.progress .bar {
+    transition: width .5s;
+}
+@media (max-width: 768px) {
+    .main {
+        margin: 0;
+    }
+    .row-fluid .spanfixed {
+        width: 100%;
+    }
+    .row-fluid .spanfixed ul {
+        width: auto;
+        position: static;
+    }
+    .row-fluid .content {
+        margin-left: 0;
+    }
+}

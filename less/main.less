@@ -1,0 +1,121 @@
+@import "bootstrap/variables";
+@import "bootstrap/mixins";
+
+body {
+  background-image: url(../img/waterlable.png);
+  background-position: right bottom;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: 30%;
+}
+
+iframe {
+  border-width: 0;
+}
+
+.logo {
+  margin: 40px 40px 0 0;
+}
+
+.hero-unit {
+  h1 {
+    line-height: .7em;
+    margin-bottom: .3em;
+  }
+
+  min-height: 250px;
+  padding: 40px 40px 10px;
+  line-height: 1.5em;
+  #gradient > .vertical(@thirdLight, @thirdMedium);
+
+  p {
+    max-width: 1200px;
+  }
+
+  a.btn {
+    margin: 0 10px 10px 0;
+  }
+}
+
+.main {
+  margin: 40px;
+  width: auto;
+
+  section {
+    padding-top: 40px;
+  }
+}
+
+pre.prettyprint {
+  border-color: @thirdDark;
+  background-color: @bgAccent;
+  padding: 15px 20px;
+}
+
+.nav-tabs > li > a {
+  border-color: @thirdMedium;
+
+  &:after {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    line-height: 14px;
+    vertical-align: text-top;
+    background-image: url("@{iconSpritePath}");
+    background-position: -456px -72px;
+    background-repeat: no-repeat;
+    margin-top: 1px;
+  }
+
+  &:hover, &:focus {
+    border-color: @thirdLight;
+    background-color: @thirdLight;
+  }
+}
+
+.nav-tabs > .active > a,
+.nav-tabs > .active > a:hover,
+.nav-tabs > .active > a:focus {
+  color: @thirdLight;
+  border-color: @thirdLight;
+  background-color: @thirdDarker;
+}
+
+.row-fluid .spanfixed {
+  width: 230px;
+
+  ul {
+    top: 85px;
+    width: 230px;
+  }
+}
+
+.row-fluid .content {
+  margin-left: 270px;
+}
+
+.progress .bar {
+  transition: width .5s;
+}
+
+@media (max-width: 768px) {
+  .main {
+    margin: 0;
+  }
+
+  .row-fluid {
+    .spanfixed {
+      width: 100%;
+
+      ul {
+        width: auto;
+        position: static;
+      }
+    }
+
+    .content {
+      margin-left: 0;
+    }
+  }
+}
+
