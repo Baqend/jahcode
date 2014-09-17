@@ -1,4 +1,4 @@
-/*! Jahcode v1.1.3 | jahcode.com | Copyright 2011-2014 by Florian Buecklers | MIT license */
+/*! Jahcode v1.1.4 | jahcode.com | Copyright 2011-2014 by Florian Buecklers | MIT license */
 
 (function(global) {
     var fakePrototype = Object.getPrototypeOf({
@@ -86,6 +86,15 @@
             }
 
             return klass;
+        },
+
+        /**
+         * Indicates if this class is a subclass of the given class or mixin the given trait.
+         * @param {Function} cls The parent class or trait to check
+         * @returns {boolean} <code>true</code> if this class is a subclass or mixin the trait
+         */
+        isA: function(cls) {
+            return this.prototype instanceof cls || this.linearizedTypes.lastIndexOf(cls) != -1;
         },
 
         /**

@@ -17,6 +17,18 @@ beforeEach(function() {
             return !this.isNot;
         },
 
+        isA : function(klasses) {
+            var expected = Array.isInstance(klasses) ? klasses : arguments;
+
+            for ( var i = 0, cls; cls = expected[i]; ++i) {
+                if (this.isNot === this.actual.isA(cls)) {
+                    return this.isNot;
+                }
+            }
+
+            return !this.isNot;
+        },
+
         isInstanceOf : function(klasses) {
             var expected = Array.isInstance(klasses) ? klasses : arguments;
 

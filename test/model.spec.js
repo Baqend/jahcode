@@ -114,6 +114,8 @@ describe("A complex model", function() {
         var types = [Object, Trait, TraitA];
         var otherTypes = [TraitB, TraitC, TraitD, ClassA, ClassB];
         expect(TraitA.linearizedTypes).toEqual(types);
+        expect(TraitA).isA(types);
+        expect(TraitA).not.isA(otherTypes);
 
         var t = new TraitA();
 
@@ -143,6 +145,8 @@ describe("A complex model", function() {
         var types = [Object, Trait, TraitA, TraitB];
         var otherTypes = [TraitC, TraitD, ClassA, ClassB];
         expect(TraitB.linearizedTypes).toEqual(types);
+        expect(TraitB).isA(types);
+        expect(TraitB).not.isA(otherTypes);
 
         var t = new TraitB();
 
@@ -173,6 +177,8 @@ describe("A complex model", function() {
         var types = [Object, Trait, TraitA, TraitC];
         var otherTypes = [TraitB, TraitD, ClassA, ClassB];
         expect(TraitC.linearizedTypes).toEqual(types);
+        expect(TraitC).isA(types);
+        expect(TraitC).not.isA(otherTypes);
 
         var t = new TraitC();
 
@@ -203,6 +209,8 @@ describe("A complex model", function() {
         var types = [Object, Trait, TraitA, TraitB, TraitC, TraitD];
         var otherTypes = [ClassA, ClassB];
         expect(TraitD.linearizedTypes).toEqual(types);
+        expect(TraitD).isA(types);
+        expect(TraitD).not.isA(otherTypes);
 
         var t = new TraitD();
 
@@ -235,6 +243,9 @@ describe("A complex model", function() {
         var types = [Object, TraitA, TraitB, ClassA];
         var otherTypes = [TraitC, TraitD, ClassB, Trait];
         expect(ClassA.linearizedTypes).toEqual(types);
+        expect(ClassA).isA(types);
+        expect(ClassA).not.isA(otherTypes);
+
 
         var t = new ClassA();
 
@@ -266,6 +277,8 @@ describe("A complex model", function() {
         var types = [Object, TraitA, TraitB, ClassA, TraitC, TraitD, ClassB];
         var otherTypes = [Trait];
         expect(ClassB.linearizedTypes).toEqual(types);
+        expect(ClassB).isA(types);
+        expect(ClassB).not.isA(otherTypes);
 
         var t = new ClassB();
 
