@@ -1,5 +1,17 @@
 require('../jahcode.js');
 
+describe("Native undefined", function() {
+    it("should be instances of undefined", function() {
+        expect(classOf(undefined)).toBeUndefined();
+    });
+});
+
+describe("Native null", function() {
+    it("should be instances of null", function() {
+        expect(null).toBeNull();
+    });
+});
+
 describe("Native booleans", function() {
     var vals = [true, false, Boolean(true), new Boolean(false)];
 

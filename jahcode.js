@@ -1,4 +1,4 @@
-/*! Jahcode v1.1.4 | jahcode.com | Copyright 2011-2014 by Florian Buecklers | MIT license */
+/*! Jahcode v1.1.5 | jahcode.com | Copyright 2011-2014 by Florian Buecklers | MIT license */
 
 (function(global) {
     var fakePrototype = Object.getPrototypeOf({
@@ -103,7 +103,7 @@
          * @returns {boolean} <code>true</code> if the object is defined and
          */
         isInstance : function(obj) {
-            if (obj === null || obj === undefined)
+            if (obj === null || obj === void 0)
                 return false;
 
             return Object(obj) instanceof this || classOf(obj).linearizedTypes.lastIndexOf(this) != -1;
@@ -253,6 +253,9 @@
      * @global
      */
     var classOf = function(object) {
+        if (object === null || object === void 0)
+            return object;
+
         return Object.getPrototypeOf(Object(object)).constructor;
     };
 
