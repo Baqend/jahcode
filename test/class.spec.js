@@ -128,6 +128,21 @@ describe("Class declaration", function() {
     });
 
     describe("with property", function() {
+        it("constructor should overwrite the default constructor", function() {
+            var myClass = Object.inherit({
+                constructor: function(a,b,c) {
+                    this.a = a;
+                    this.b = b;
+                    this.c = c;
+                }
+            });
+
+            var cls = new myClass(1,2,3);
+            expect(cls.a).toEqual(1);
+            expect(cls.b).toEqual(2);
+            expect(cls.c).toEqual(3);
+        });
+
         it("should define simple property", function() {
             var myClass = Object.inherit({
                 test: 34

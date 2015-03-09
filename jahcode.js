@@ -1,9 +1,9 @@
-/*! Jahcode v1.1.5 | jahcode.com | Copyright 2011-2014 by Florian Buecklers | MIT license */
+/*! Jahcode v1.1.6 | jahcode.com | Copyright 2011-2014 by Florian Buecklers | MIT license */
 
 (function(global) {
     var fakePrototype = Object.getPrototypeOf({
-        constructor : String
-    }) == String.prototype;
+            constructor : String
+        }) == String.prototype;
 
     if (!Function.prototype.extend) {
         /**
@@ -43,16 +43,16 @@
          * @returns {Function} The new created child class
          */
         inherit : function() {
-            var klass = function(toCast) {
+            var objectDescriptor = arguments[arguments.length - 1];
+            var klass = objectDescriptor.constructor !== Object? objectDescriptor.constructor: function Class(toCast) {
                 if (!(this instanceof klass)) {
                     return klass.asInstance(toCast);
                 }
 
                 if (this.initialize)
-                    arguments.length ? this.initialize.apply(this, arguments) : this.initialize.call(this);
+                    arguments.length ? this.initialize.apply(this, arguments) : this.initialize();
             };
 
-            var objectDescriptor = arguments[arguments.length - 1];
             var proto = Object.createPrototypeChain(klass, this, Array.prototype.slice.call(arguments, 0, arguments.length - 1));
 
             var names = Object.getOwnPropertyNames(objectDescriptor);
@@ -343,7 +343,7 @@
 
                 for ( var name in proto) {
                     var method = proto[name];
-                    if (name != 'initialize' && method instanceof Function) {
+                    if (name != 'initialize' && name != 'constructor' && method instanceof Function) {
                         callback(name, method);
                     }
                 }
@@ -386,7 +386,7 @@
     Error.prototype.initialize = function(message) {
         var stack = new Error().stack || 'Error';
         stack = stack.substring(stack.indexOf('\n') + 1);
-        
+
         this.stack = message + '\n' + stack;
         this.message = message;
     };

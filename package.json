@@ -1,6 +1,6 @@
 {
   "name": "jahcode",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "Scala like Classes and Traits in JavaScript",
   "author": {
     "name": "Florian Buecklers",
