@@ -20,7 +20,7 @@ get most of the ECMA 5 features in older engines.
 Running the Tests
 ----------------
 
-The tests for jahcode are written with [jasmine](http://pivotal.github.io/jasmine/) can can be executed in
+The tests for jahcode are written with [jasmine](https://jasmine.github.io/) can can be executed in
 node.js and browsers.
 
 * To run the tests in a browser just open test/SpecRunner.html
